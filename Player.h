@@ -5,8 +5,9 @@
 class Player
 {
 	Stack<GameState*> states;
-	int dir = 3; int wait = 0;
 public:
+	int width, height;
+	int dir = 3; int wait = 0;
 	int keyUp, keyDown, keyLeft, keyRight, keyA, keyB;
 	SDL_Texture *texture;
 	int x, y, xOffset, yOffset;

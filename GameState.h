@@ -5,11 +5,23 @@
 
 class GameState
 {
+protected:
 	Player *p;
+	bool a, b, up, down, left, right;
 public:
 	GameState(Player *player);
 	virtual void draw() = 0;
 	virtual void run() = 0;
+	void startMenu();
+	void endMenu();
+};
+
+class WorldState : public GameState
+{
+public:
+	WorldState(Player *player);
+	virtual void draw();
+	virtual void run();
 };
 
 #endif

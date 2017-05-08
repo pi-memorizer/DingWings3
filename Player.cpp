@@ -9,12 +9,15 @@ Player::Player(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int ke
 	this->keyRight = keyRight;
 	this->keyA = keyA;
 	this->keyB = keyB;
-	x = 0;
-	y = 0;
+	x = -2;
+	y = -2;
 	xOffset = 0;
 	yOffset = 0;
 	worldID = 0;
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, 160, 144);
+	width = 16;
+	height = 16;
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
+	pushState(new WorldState(this));
 }
 
 GameState *Player::getState()
@@ -47,14 +50,20 @@ void Player::setState(GameState *state)
 
 Sprite *Player::getSprite()
 {
-	return male;
+	int i = dir;
+	if ((wait / 10) % 2 == 1) i += 4;
+	if ((dir == 1 || dir == 3) && (wait / 10) % 4 == 3) i += 4;
+	return guy[i];
 }
 
 void Player::draw()
 {
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0);
-	SDL_RenderClear(renderer);
-	getSprite()->draw(0, 0);
+	GameState *state = getState();
+	if (state != nullptr)
+	{
+		state->draw();
+	}
+	
 }
 
 void Player::run()
@@ -64,6 +73,6 @@ void Player::run()
 	{
 		state->run();
 	}
-	if (keys[keyA])
-		sounds[0]->play();
+	//if (keys[keyA])
+		//sounds[0]->play();
 }

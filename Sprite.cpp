@@ -14,10 +14,7 @@ Sprite::Sprite(string filename, int xOffset, int yOffset)
 		sprites.add(this);
 	}
 	else {
-#ifdef DEBUG
-		cout << "Error loading sprite" << endl;
-		cout << IMG_GetError() << endl;
-#endif
+		throw -1;
 	}
 }
 
