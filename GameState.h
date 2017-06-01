@@ -24,4 +24,13 @@ public:
 	virtual void run();
 };
 
+class TextBox : public GameState
+{
+	string msg;
+public:
+	TextBox(Player *p, string _msg);
+	void run();
+	void draw();
+};
+
 #endif

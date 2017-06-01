@@ -11,14 +11,17 @@ Sound *sounds[1024];
 #include "SpriteList.h"
 #undef SPRITE
 
+bool fullscreen = true;
+int screenWidth = WIDTH, screenHeight = HEIGHT;
+SDL_DisplayMode displayMode;
+
 #ifdef main
 #undef main
 #endif
 int main(int argc, char **argv)
 {
-	int screenWidth = WIDTH, screenHeight = HEIGHT;
 	debug("Debugging mode active");
-	bool fullscreen = true;
+	
 	args = new string[argc];
 	numArgs = argc;
 	for (int i = 0; i < argc; i++)
@@ -43,7 +46,6 @@ int main(int argc, char **argv)
 	soundSystem = new SoundSystem();
 	sounds[0] = new Sound("door");
 
-	SDL_DisplayMode displayMode;
 	SDL_GetDesktopDisplayMode(0, &displayMode);
 	window = SDL_CreateWindow("Revengine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if (window == nullptr)
@@ -100,89 +102,93 @@ int main(int argc, char **argv)
 	init();
 	load();
 
-	bool quit = false;
-	SDL_Event e;
-	while (!quit)
-	{
-		while (SDL_PollEvent(&e))
-		{
-			if (e.type == SDL_QUIT)
-			{
-				quit = true;
-			}
-			else if (e.type == SDL_KEYDOWN)
-			{
-				if (e.key.keysym.sym == SDLK_F4 && !keys[SDLK_F4])
-				{
-					if (fullscreen)
-					{
-						SDL_SetWindowFullscreen(window, 0);
-						SDL_SetWindowSize(window, 2 * WIDTH, 2 * HEIGHT);
-						SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-					} else {
-						SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-						SDL_SetWindowSize(window, displayMode.w, displayMode.h);
-					}
-					fullscreen = !fullscreen;
-				}
-				if (keys.contains(e.key.keysym.sym))
-				{
-					keys[e.key.keysym.sym] = true;
-				}
-				if (e.key.keysym.sym == SDLK_ESCAPE)
-				{
-					quit = true;
-				}
-			}
-			else if (e.type == SDL_KEYUP)
-			{
-				if (keys.contains(e.key.keysym.sym))
-				{
-					keys[e.key.keysym.sym] = false;
-				}
-			}
-		}
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-		SDL_RenderClear(renderer);
+	while (theLoop());
 
-		int width;
-		int height;
-		SDL_GetWindowSize(window, &width, &height);
-		float wRat = width / (float)screenWidth;
-		float hRat = height / (float)screenHeight;
-		if (numPlayers == 1)
-		{
-			SDL_Rect rect;
-			if (wRat < hRat)
-			{
-				int newHeight = (int)(width / (float)WIDTH * (float)HEIGHT);
-				rect.h = newHeight;
-				rect.w = width;
-				rect.x = 0;
-				rect.y = (height - newHeight) / 2;
-			}
-			else
-			{
-				int newWidth = (int)(height / (float)HEIGHT * (float)WIDTH);
-				rect.w = newWidth;
-				rect.h = height;
-				rect.x = (width - newWidth) / 2;
-				rect.y = 0;
-			}
-			SDL_SetRenderTarget(renderer, players[0]->texture);
-			players[0]->draw();
-			SDL_SetRenderTarget(renderer, nullptr);
-			SDL_RenderCopy(renderer, players[0]->texture, nullptr, &rect);
-		}
-		SDL_RenderPresent(renderer);
-
-		for (int i = 0; i < numPlayers; i++)
-		{
-			players[i]->run();
-		}
-
-		SDL_Delay(16);
-	}
 	quitSDL();
 	return 0;
+}
+
+bool theLoop()
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+	{
+		if (e.type == SDL_QUIT)
+		{
+			return false;
+		}
+		else if (e.type == SDL_KEYDOWN)
+		{
+			if (e.key.keysym.sym == SDLK_F4 && !keys[SDLK_F4])
+			{
+				if (fullscreen)
+				{
+					SDL_SetWindowFullscreen(window, 0);
+					SDL_SetWindowSize(window, 2 * WIDTH, 2 * HEIGHT);
+					SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+				}
+				else {
+					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+					SDL_SetWindowSize(window, displayMode.w, displayMode.h);
+				}
+				fullscreen = !fullscreen;
+			}
+			if (keys.contains(e.key.keysym.sym))
+			{
+				keys[e.key.keysym.sym] = true;
+			}
+			if (e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				return false;
+			}
+		}
+		else if (e.type == SDL_KEYUP)
+		{
+			if (keys.contains(e.key.keysym.sym))
+			{
+				keys[e.key.keysym.sym] = false;
+			}
+		}
+	}
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+	SDL_RenderClear(renderer);
+
+	int width;
+	int height;
+	SDL_GetWindowSize(window, &width, &height);
+	float wRat = width / (float)screenWidth;
+	float hRat = height / (float)screenHeight;
+	if (numPlayers == 1)
+	{
+		SDL_Rect rect;
+		if (wRat < hRat)
+		{
+			int newHeight = (int)(width / (float)WIDTH * (float)HEIGHT);
+			rect.h = newHeight;
+			rect.w = width;
+			rect.x = 0;
+			rect.y = (height - newHeight) / 2;
+		}
+		else
+		{
+			int newWidth = (int)(height / (float)HEIGHT * (float)WIDTH);
+			rect.w = newWidth;
+			rect.h = height;
+			rect.x = (width - newWidth) / 2;
+			rect.y = 0;
+		}
+		SDL_SetRenderTarget(renderer, players[0]->texture);
+		players[0]->draw();
+		SDL_SetRenderTarget(renderer, nullptr);
+		SDL_RenderCopy(renderer, players[0]->texture, nullptr, &rect);
+	}
+	SDL_RenderPresent(renderer);
+
+	for (int i = 0; i < numPlayers; i++)
+	{
+		players[i]->run();
+	}
+
+	SDL_Delay(16);
+	return true;
 }

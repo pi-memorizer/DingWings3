@@ -230,15 +230,6 @@ void WorldState::run()
 	endMenu();
 }
 
-class TextBox : public GameState
-{
-	string msg;
-public:
-	TextBox(Player *p, string _msg);
-	void run();
-	void draw();
-};
-
 TextBox::TextBox(Player *p, string _msg) : GameState(p)
 {
 	msg = _msg;

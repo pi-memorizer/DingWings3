@@ -27,6 +27,7 @@ extern int numArgs;
 
 class Sprite;
 class GameState;
+class Textbox;
 class Player;
 class SoundSystem;
 class Sound;
@@ -63,6 +64,7 @@ int getOnscreenY(Player *p, int y, int yOffset);
 int safeDiv(int x, int factor);
 void textbox(int i, string msg);
 bool rectCollides(int x1, int y1, int width1, int height1, int x2, int y2, int width2, int height2);
+bool theLoop();
 
 //File IO
 void save();
