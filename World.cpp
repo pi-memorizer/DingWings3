@@ -1,4 +1,6 @@
 #include "World.h"
+#include "IO.h"
+#include "Entity.h"
 
 List<World*> worlds;
 

@@ -1,5 +1,8 @@
 #include "SoundSystem.h"
 
+SoundSystem *soundSystem;
+Sound *sounds[1024];
+
 SoundSystem::SoundSystem()
 {
 	song = "";

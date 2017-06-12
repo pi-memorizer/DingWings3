@@ -1,4 +1,81 @@
 #include "Player.h"
+#include "GameState.h"
+#include "Sprite.h"
+#include "Item.h"
+
+Player **players = new Player*[0];
+int numPlayers = 0;
+
+Player *getPlayer(int id)
+{
+	int index = -1;
+	for (int i = 0; i < numPlayers; i++)
+	{
+		if (players[i]->id == id)
+		{
+			index = i;
+			break;
+		}
+	}
+	if (index == -1)
+		return nullptr;
+	else
+		return players[index];
+}
+
+void addPlayer(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int keyA, int keyB)
+{
+	int index = -1;
+	for (int i = 0; i < numPlayers; i++)
+	{
+		if (players[i]->id == id)
+		{
+			index = i;
+			break;
+		}
+	}
+	if (index == -1)
+	{
+		Player **buffer = new Player*[numPlayers + 1];
+		for (int i = 0; i < numPlayers; i++)
+		{
+			buffer[i] = players[i];
+		}
+		buffer[numPlayers] = new Player(id, keyRight, keyUp, keyLeft, keyDown, keyA, keyB);
+		delete[] players;
+		players = buffer;
+		numPlayers++;
+	}
+}
+
+void removePlayer(int id)
+{
+	int index = -1;
+	for (int i = 0; i < numPlayers; i++)
+	{
+		if (players[i]->id == id)
+		{
+			index = i;
+			break;
+		}
+	}
+	if (index != -1)
+	{
+		delete players[index];
+		Player **buffer = new Player*[numPlayers - 1];
+		for (int i = 0, j = 0; i < numPlayers; i++)
+		{
+			if (i != index)
+			{
+				buffer[j] = players[i];
+				j++;
+			}
+		}
+		delete[] players;
+		players = buffer;
+		numPlayers--;
+	}
+}
 
 Player::Player(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int keyA, int keyB)
 {
@@ -18,6 +95,11 @@ Player::Player(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int ke
 	height = 16;
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
 	pushState(new WorldState(this));
+	for (int i = 0; i < INVENTORY_SLOTS; i++)
+	{
+		inventory[i].item = nullptr;
+		inventory[i].number = 0;
+	}
 }
 
 GameState *Player::getState()
@@ -75,4 +157,75 @@ void Player::run()
 	}
 	//if (keys[keyA])
 		//sounds[0]->play();
+}
+
+bool Player::hasItem(Item *item)
+{
+	for (int i = 0; i < INVENTORY_SLOTS; i++)
+	{
+		if (item == inventory[i].item)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+bool Player::hasItem(unsigned long long flag)
+{
+	for (int i = 0; i < INVENTORY_SLOTS; i++)
+	{
+		if (inventory[i].item->containsFlag(flag))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+ItemNumberPair* Player::getItem(Item *item)
+{
+	int start = abs(rand()) % INVENTORY_SLOTS;
+	int i = start;
+	do {
+		if (inventory[i].item == item)
+		{
+			return &inventory[i];
+		}
+		i++;
+		if (i >= INVENTORY_SLOTS)
+		{
+			i = 0;
+		}
+	} while (i != start);
+	return nullptr;
+}
+
+ItemNumberPair* Player::getItem(unsigned long long category)
+{
+	int start = abs(rand()) % INVENTORY_SLOTS;
+	int i = start;
+	do {
+		if (inventory[i].item!=nullptr&&(inventory[i].item->flags&category)== category)
+		{
+			return &inventory[i];
+		}
+		i++;
+		if (i >= INVENTORY_SLOTS)
+		{
+			i = 0;
+		}
+	} while (i != start);
+	return nullptr;
+}
+
+int Player::itemCount(Item *item)
+{
+	int count = 0;
+	for (int i = 0; i < INVENTORY_SLOTS; i++)
+	{
+		if (inventory[i].item == item)
+		{
+			count += inventory[i].number;
+		}
+	}
+	return count;
 }

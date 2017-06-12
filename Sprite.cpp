@@ -14,7 +14,7 @@ Sprite::Sprite(string filename, int xOffset, int yOffset)
 		sprites.add(this);
 	}
 	else {
-		throw -1;
+		throw - 1;
 	}
 }
 
@@ -53,3 +53,5 @@ void Sprite::draw(int x, int y)
 	d.y = y + yOffset;
 	SDL_RenderCopy(renderer, sprite, &source, &d);
 }
+
+List<Sprite*> sprites;

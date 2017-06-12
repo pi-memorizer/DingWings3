@@ -1,11 +1,15 @@
 #include <iostream>
 #include "Revengine.h"
+#include "Blocking.h"
+#include "Sprite.h"
+#include "SoundSystem.h"
+#include "Player.h"
+#include "IO.h"
+#include "Item.h"
 using namespace std;
 
 string *args = nullptr;
 int numArgs = 0;
-SoundSystem *soundSystem;
-Sound *sounds[1024];
 
 #define SPRITE Sprite
 #include "SpriteList.h"
@@ -99,11 +103,17 @@ int main(int argc, char **argv)
 
 	addPlayer(0,SDLK_d,SDLK_w,SDLK_a,SDLK_s,SDLK_j,SDLK_k);
 
+	addItems();
 	init();
 	load();
 
-	while (theLoop());
-
+	try {
+		while (theLoop());
+	}
+	catch (ApplicationClosingException &a)
+	{
+		debug("Application closing exception caught");
+	}
 	quitSDL();
 	return 0;
 }

@@ -23,4 +23,7 @@ public:
 	void play();
 };
 
+extern SoundSystem *soundSystem;
+extern Sound *sounds[];
+
 #endif

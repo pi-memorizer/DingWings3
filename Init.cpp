@@ -1,20 +1,21 @@
 #include "Revengine.h"
 #include "Blocking.h"
+#include "World.h"
+#include "Player.h"
+#include "Entity.h"
+#include "Item.h"
 
 void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
 	if (x == -1 && y == 2)
 	{
-		bTextbox("Test 1");
-		bTextbox("Test 2");
-		bTextbox("Test 3");
+		bSelectItem(ITEM_FOOD);
 		return true;
 	}
 	return false;
 }
 bool nothing(Player *p) //interact entity variant
 {
-	textbox(0, "Sup?");
 	return true;
 }
 

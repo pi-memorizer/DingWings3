@@ -27,6 +27,7 @@ public:
 class TextBox : public GameState
 {
 	string msg;
+	GameState *caller;
 public:
 	TextBox(Player *p, string _msg);
 	void run();
