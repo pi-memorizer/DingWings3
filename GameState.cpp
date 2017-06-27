@@ -5,6 +5,8 @@
 #include "Sprite.h"
 #include "Event.h"
 
+Sprite **chars = nullptr;
+
 GameState::GameState(Player *player)
 {
 	p = player;

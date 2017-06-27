@@ -1,8 +1,76 @@
 #include "Revengine.h"
 #include "Player.h"
 #include "Sprite.h"
+#include "Event.h"
+
+#ifdef MOBILE
+string to_string(int value);
+#endif
 
 Hashmap<string, int> flags;
+int screenWidth = WIDTH, screenHeight = HEIGHT;
+
+bool theLoop()
+{
+	Event e;
+	while (getEvent(&e))
+	{
+		if (e.type == EVENT_QUIT)
+		{
+			return false;
+		}
+		else if (e.type == EVENT_KEY_DOWN)
+		{
+
+		}
+		else if (e.type == EVENT_KEY_UP)
+		{
+
+		}
+	}
+
+	setDrawColor(0, 0, 0, 0);
+	clearScreen();
+
+	int width;
+	int height;
+	getWindowSize(&width, &height);
+	float wRat = width / (float)screenWidth;
+	float hRat = height / (float)screenHeight;
+	if (numPlayers == 1)
+	{
+		Rect rect;
+		if (wRat < hRat)
+		{
+			int newHeight = (int)(width / (float)WIDTH * (float)HEIGHT);
+			rect.h = newHeight;
+			rect.w = width;
+			rect.x = 0;
+			rect.y = (height - newHeight) / 2;
+		}
+		else
+		{
+			int newWidth = (int)(height / (float)HEIGHT * (float)WIDTH);
+			rect.w = newWidth;
+			rect.h = height;
+			rect.x = (width - newWidth) / 2;
+			rect.y = 0;
+		}
+		startDrawingPlayer(0);
+		players[0]->draw();
+		startDrawingPlayer(-1);
+		drawTexture(players[0]->texture, &rect);
+	}
+	display();
+
+	for (int i = 0; i < numPlayers; i++)
+	{
+		players[i]->run();
+	}
+
+	delay(16);
+	return true;
+}
 
 int getOnscreenX(Player *p, int x, int xOffset)
 {

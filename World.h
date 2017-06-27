@@ -2,6 +2,8 @@
 #define WORLD_H
 #include "Revengine.h"
 
+extern Sprite **tileset;
+
 class World
 {
 public:

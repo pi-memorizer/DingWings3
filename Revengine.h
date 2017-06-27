@@ -18,12 +18,6 @@ using namespace std;
 	#define debug(a) ;;
 #endif
 
-void delay(int millis);
-int startGame();
-void exitGame();
-extern string *args;
-extern int numArgs;
-
 #define WIDTH 320
 #define HEIGHT 240
 #define TILE_SIZE 32
@@ -39,6 +33,9 @@ class WorldState;
 class Entity;
 class Item;
 
+void delay(int millis);
+int startGame();
+void exitGame();
 extern Hashmap<string, int> flags;
 int getFlag(string s);
 void setFlag(string s, int value);

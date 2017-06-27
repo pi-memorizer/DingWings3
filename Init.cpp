@@ -4,6 +4,10 @@
 #include "Player.h"
 #include "Entity.h"
 #include "Item.h"
+#include "Sprite.h"
+#include "IO.h"
+#include "SoundSystem.h"
+#include "GameState.h"
 
 void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
@@ -29,6 +33,38 @@ void enterNothing(Player *p)
 
 void init()
 {
+	createSound("door");
+
+	//load sprites
+	Sprite *guySheet = new Sprite("guy", 0, 0);
+	guy = new Sprite*[12];
+	for (int i = 0; i < 12; i++)
+	{
+		guy[i] = new Sprite(guySheet, 16 * (i % 4), 24 * (i / 4), 16, 24, 0, -8);
+	}
+	tileset = new Sprite*[65536];
+	for (int i = 0; i < 65536; i++)
+	{
+		tileset[i] = nullptr;
+	}
+	for (int i = 0; i < 256; i++)
+	{
+		try {
+			Sprite *s = new Sprite("tileset" + to_string(i + 1), 0, 0);
+			for (int j = 0; j < 256; j++)
+			{
+				tileset[i * 256 + j] = new Sprite(s, TILE_SIZE * (j % 16), TILE_SIZE * (j / 16), TILE_SIZE, TILE_SIZE, 0, 0);
+			}
+		}
+		catch (int) {
+		}
+	}
+	Sprite *s = new Sprite("charset", 0, 0);
+	chars = new Sprite*[256];
+	for (int i = 0; i < 256; i++)
+	{
+		chars[i] = new Sprite(s, 8 * (i % 16), 8 * (i / 16), 8, 8, 0, 0);
+	}
 	//add entities to worlds and stuff here preferably
 	World *test = new StaticWorld("test", &enterNothing,&nothing, &nothing);
 	worlds.add(test);
@@ -37,4 +73,8 @@ void init()
 	addItem("null")
 		->_flags(ITEM_FOOD | ITEM_FURNITURE)
 		->_displayName("Nothing");
+
+	load();
+
+	setBackgroundMusic("PossibleTheme");
 }

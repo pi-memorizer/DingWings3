@@ -22,9 +22,4 @@ public:
 
 extern List<Sprite*> sprites;
 
-//sprite list
-#define SPRITE extern Sprite
-#include "SpriteList.h"
-#undef SPRITE
-
 #endif

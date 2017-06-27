@@ -5,6 +5,8 @@
 
 #define INVENTORY_SLOTS 3
 
+extern Sprite ** guy;
+
 struct ItemNumberPair
 {
 	Item *item;

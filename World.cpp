@@ -3,6 +3,7 @@
 #include "Entity.h"
 
 List<World*> worlds;
+Sprite **tileset = nullptr;
 
 void World::addEntity(Entity *e)
 {

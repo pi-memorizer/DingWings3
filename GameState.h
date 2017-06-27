@@ -3,6 +3,8 @@
 
 #include "Revengine.h"
 
+extern Sprite **chars;
+
 class GameState
 {
 protected:

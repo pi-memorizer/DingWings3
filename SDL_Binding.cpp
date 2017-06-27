@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "Sprite.h"
 #include "Graphics.h"
+#include "Blocking.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -470,4 +471,31 @@ void playSound(string name)
 	{
 		Mix_PlayChannel(-1, sounds[name], 0);
 	}
+}
+
+#ifdef main
+#undef main
+#endif
+int main(int argc, char **argv)
+{
+	debug("Debugging mode active");
+
+	if (startGame() != 0)
+	{
+		return -1;
+	}
+
+	addPlayer(0);
+
+	init();
+
+	try {
+		while (theLoop());
+	}
+	catch (ApplicationClosingException &a)
+	{
+		debug("Application closing exception caught");
+	}
+	exitGame();
+	return 0;
 }

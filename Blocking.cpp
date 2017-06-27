@@ -5,7 +5,10 @@
 #include "Item.h"
 #include "Event.h"
 
+
+#ifdef MOBILE
 string to_string(int value);
+#endif
 
 ApplicationClosingException::ApplicationClosingException()
 {

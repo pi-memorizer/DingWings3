@@ -6,6 +6,7 @@
 
 Player **players = new Player*[0];
 int numPlayers = 0;
+Sprite **guy = nullptr;
 
 Player *getPlayer(int id)
 {
