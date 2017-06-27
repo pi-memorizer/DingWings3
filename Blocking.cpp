@@ -146,11 +146,11 @@ void OptionPane::draw()
 	}
 }
 
-void bTextbox(string s)
+void bTextbox(Player *p, string s)
 {
-	TextBox * text = new TextBox(players[0], s);
-	players[0]->pushState(text);
-	while (text == players[0]->getState())
+	TextBox * text = new TextBox(p, s);
+	p->pushState(text);
+	while (text == p->getState())
 	{
 		if (!theLoop())
 		{
@@ -159,12 +159,12 @@ void bTextbox(string s)
 	}
 }
 
-string bOptionPane(string msg, string choices[], int numChoices)
+string bOptionPane(Player *p, string msg, string choices[], int numChoices)
 {
 	string output;
-	OptionPane * pane = new OptionPane(players[0], msg, choices, numChoices, &output);
-	players[0]->pushState(pane);
-	while (pane == players[0]->getState())
+	OptionPane * pane = new OptionPane(p, msg, choices, numChoices, &output);
+	p->pushState(pane);
+	while (pane == p->getState())
 	{
 		if (!theLoop())
 		{
@@ -174,54 +174,54 @@ string bOptionPane(string msg, string choices[], int numChoices)
 	return output;
 }
 
-string bOptionPane(string msg, string choice1, string choice2)
+string bOptionPane(Player *p,string msg, string choice1, string choice2)
 {
 	string choices[] = {
 		choice1, choice2
 	};
-	return bOptionPane(msg, choices, 2);
+	return bOptionPane(p,msg, choices, 2);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3)
+string bOptionPane(Player *p, string msg, string choice1, string choice2, string choice3)
 {
 	string choices[] = {
 		choice1, choice2, choice3
 	};
-	return bOptionPane(msg, choices, 3);
+	return bOptionPane(p,msg, choices, 3);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3, string choice4)
+string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4)
 {
 	string choices[] = {
 		choice1, choice2, choice3, choice4
 	};
-	return bOptionPane(msg, choices, 4);
+	return bOptionPane(p,msg, choices, 4);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3, string choice4, string choice5)
+string bOptionPane(Player *p, string msg, string choice1, string choice2, string choice3, string choice4, string choice5)
 {
 	string choices[] = {
 		choice1, choice2, choice3, choice4, choice5
 	};
-	return bOptionPane(msg, choices, 5);
+	return bOptionPane(p,msg, choices, 5);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6)
+string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6)
 {
 	string choices[] = {
 		choice1, choice2, choice3, choice4, choice5, choice6
 	};
-	return bOptionPane(msg, choices, 6);
+	return bOptionPane(p,msg, choices, 6);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7)
+string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7)
 {
 	string choices[] = {
 		choice1, choice2, choice3, choice4, choice5, choice6, choice7
 	};
-	return bOptionPane(msg, choices, 7);
+	return bOptionPane(p,msg, choices, 7);
 }
-string bOptionPane(string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7, string choice8)
+string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7, string choice8)
 {
 	string choices[] = {
 		choice1, choice2, choice3, choice4, choice5, choice6, choice7, choice8
 	};
-	return bOptionPane(msg, choices, 8);
+	return bOptionPane(p,msg, choices, 8);
 }
 
 class NumberPane : public GameState
@@ -313,12 +313,12 @@ void NumberPane::run()
 	endMenu();
 }
 
-int bNumberPane(string msg, int start, int min, int max)
+int bNumberPane(Player *p, string msg, int start, int min, int max)
 {
 	int output;
-	NumberPane *pane = new NumberPane(players[0], msg, start, min, max, &output);
-	players[0]->pushState(pane);
-	while (pane == players[0]->getState())
+	NumberPane *pane = new NumberPane(p, msg, start, min, max, &output);
+	p->pushState(pane);
+	while (pane == p->getState())
 	{
 		if (!theLoop())
 		{
@@ -476,17 +476,17 @@ void InventoryDialogue::draw()
 	}
 }
 
-Item* bSelectItem()
+Item* bSelectItem(Player *p)
 {
-	return bSelectItem(~((unsigned long long)0));
+	return bSelectItem(p,~((unsigned long long)0));
 }
 
-Item* bSelectItem(unsigned long long categories)
+Item* bSelectItem(Player *p, unsigned long long categories)
 {
 	Item *output = nullptr;
-	InventoryDialogue *state = new InventoryDialogue(players[0], categories, &output);
-	players[0]->pushState(state);
-	while (state == players[0]->getState())
+	InventoryDialogue *state = new InventoryDialogue(p, categories, &output);
+	p->pushState(state);
+	while (state == p->getState())
 	{
 		if (!theLoop())
 		{

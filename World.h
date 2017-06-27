@@ -7,6 +7,7 @@ class World
 public:
 	List<Entity*> entities;
 	void virtual run() = 0;
+	void virtual enter(Player *p) = 0;
 	bool virtual interact(Player *p, int x, int y) = 0;
 	bool virtual collides(int x, int y, int xOffset, int yOffset, int width, int height) = 0;
 	int virtual getLower(int x, int y) = 0;
@@ -36,13 +37,15 @@ class StaticWorld : public World
 private:
 	void(*_run)();
 	bool(*_interact)(Player*,int,int);
+	void(*_enter)(Player *p);
 	int width, height, xOffset, yOffset;
 	StaticBlock *map = nullptr;
 	bool subCollision(int x, int y, int px, int py, int pwidth, int pheight);
 public:
-	StaticWorld(string filename, void (*run)(), bool(*interact)(Player*,int,int));
+	StaticWorld(string filename, void (*enter)(Player *p), void (*run)(), bool(*interact)(Player*,int,int));
 	
 	void run();
+	void enter(Player *p);
 	bool interact(Player *p, int x, int y);
 	bool virtual collides(int x, int y, int xOffset, int yOffset, int width, int height);
 	int virtual getLower(int x, int y);

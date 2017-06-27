@@ -10,7 +10,7 @@ Item::Item(string name)
 
 bool Item::containsFlag(unsigned long long flag)
 {
-	return flag & flags;
+	return (flag & flags)!=0;
 }
 
 Item* Item::_flags(unsigned long long flags)

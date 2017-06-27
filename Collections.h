@@ -18,7 +18,7 @@ public:
 	T pop();
 	void push(T val);
 	T peek();
-	int length();
+	unsigned int length();
 };
 
 template<class T> Stack<T>::Stack()
@@ -106,7 +106,7 @@ template<class T> T Stack<T>::peek()
 	return stack[top - 1];
 }
 
-template<class T> int Stack<T>::length()
+template<class T> unsigned int Stack<T>::length()
 {
 	return top;
 }
@@ -125,7 +125,7 @@ public:
 	List(List &other);
 	List& operator=(List &other);
 	List& operator=(List &&other);
-	int length();
+	unsigned int length();
 	T& operator[](int index);
 	const T& operator[](int index) const;
 	void add(T val);
@@ -189,7 +189,7 @@ template<class T> List<T>& List<T>::operator=(List<T> &&other)
 	return *this;
 }
 
-template<class T> int List<T>::length()
+template<class T> unsigned int List<T>::length()
 {
 	return top;
 }
@@ -303,7 +303,7 @@ public:
 	Hashmap(Hashmap &&other);
 	Hashmap& operator=(Hashmap &other);
 	Hashmap& operator=(Hashmap &&other);
-	int length();
+	unsigned int length();
 	void add(T key, V value);
 	V& operator[](T index);
 	const V& operator[](T index) const;
@@ -388,7 +388,7 @@ template<class T, class V> Hashmap<T,V>& Hashmap<T,V>::operator=(Hashmap<T,V> &&
 	return *this;
 }
 
-template<class T, class V> int Hashmap<T,V>::length()
+template<class T, class V> unsigned int Hashmap<T,V>::length()
 {
 	return count;
 }

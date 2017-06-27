@@ -10,10 +10,11 @@ void World::addEntity(Entity *e)
 	entities.add(e);
 }
 
-StaticWorld::StaticWorld(string filename, void(*run)(), bool(*interact)(Player*, int, int))
+StaticWorld::StaticWorld(string filename, void(*enter)(Player*),void(*run)(), bool(*interact)(Player*, int, int))
 {
 	_run = run;
 	_interact = interact;
+	_enter = enter;
 	File *file = openFile(("map/" + filename + ".rmap").c_str(), false);
 	if (file != nullptr)
 	{
@@ -50,6 +51,11 @@ StaticWorld::StaticWorld(string filename, void(*run)(), bool(*interact)(Player*,
 void StaticWorld::run()
 {
 	_run();
+}
+
+void StaticWorld::enter(Player *p)
+{
+	_enter(p);
 }
 
 bool StaticWorld::interact(Player *p, int x, int y)

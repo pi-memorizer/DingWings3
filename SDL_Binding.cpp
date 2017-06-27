@@ -330,6 +330,8 @@ unsigned int keySymPairs[] = {
 	0,0
 };
 
+bool fullscreen = true;
+
 bool getEvent(Event *e)
 {
 	SDL_Event sdl;
@@ -341,6 +343,7 @@ bool getEvent(Event *e)
 		}
 		else if (sdl.type==SDL_KEYDOWN&&!sdl.key.repeat)
 		{
+			e->type = EVENT_KEY_DOWN;
 			if (keys.contains(sdl.key.keysym.sym))
 			{
 				e->keys.prevState = keys[sdl.key.keysym.sym];
@@ -354,15 +357,33 @@ bool getEvent(Event *e)
 						break;
 					}
 				}
+				if (e->keys.key == KEY_FULLSCREEN && !e->keys.prevState)
+				{
+					if (fullscreen)
+					{
+						setWindowFullscreen(false);
+						setWindowSize(2 * WIDTH, 2 * HEIGHT);
+						centerWindow();
+					}
+					else {
+						setWindowFullscreen(true);
+						setWindowSize(getScreenWidth(), getScreenHeight());
+					}
+					fullscreen = !fullscreen;
+				}
+				if (e->keys.key == KEY_ESCAPE)
+				{
+					e->type = EVENT_QUIT;
+				}
 			}
 			else {
 				e->keys.key = KEY_UNKNOWN;
 				e->keys.prevState = false;
 			}
-			e->type = EVENT_KEY_DOWN;
 		}
 		else if (sdl.type==SDL_KEYUP&&!sdl.key.repeat)
 		{
+			e->type = EVENT_KEY_UP;
 			if (keys.contains(sdl.key.keysym.sym))
 			{
 				e->keys.prevState = keys[sdl.key.keysym.sym];
@@ -381,7 +402,6 @@ bool getEvent(Event *e)
 				e->keys.key = KEY_UNKNOWN;
 				e->keys.prevState = false;
 			}
-			e->type = EVENT_KEY_UP;
 		}
 		else {
 			e->type = EVENT_UNKNOWN;

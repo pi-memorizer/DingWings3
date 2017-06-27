@@ -17,7 +17,6 @@ int numArgs = 0;
 #include "SpriteList.h"
 #undef SPRITE
 
-bool fullscreen = true;
 int screenWidth = WIDTH, screenHeight = HEIGHT;
 
 #ifdef main
@@ -101,24 +100,7 @@ bool theLoop()
 		}
 		else if (e.type == EVENT_KEY_DOWN)
 		{
-			if (e.keys.key == KEY_FULLSCREEN && !e.keys.prevState)
-			{
-				if (fullscreen)
-				{
-					setWindowFullscreen(false);
-					setWindowSize(2 * WIDTH, 2 * HEIGHT);
-					centerWindow();
-				}
-				else {
-					setWindowFullscreen(true);
-					setWindowSize(getScreenWidth(), getScreenHeight());
-				}
-				fullscreen = !fullscreen;
-			}
-			if (e.keys.key == KEY_ESCAPE)
-			{
-				return false;
-			}
+			
 		}
 		else if (e.type == EVENT_KEY_UP)
 		{
