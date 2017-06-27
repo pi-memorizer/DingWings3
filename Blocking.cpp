@@ -5,6 +5,8 @@
 #include "Item.h"
 #include "Event.h"
 
+string to_string(int value);
+
 ApplicationClosingException::ApplicationClosingException()
 {
 
