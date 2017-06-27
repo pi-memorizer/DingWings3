@@ -28,6 +28,7 @@ class TextBox : public GameState
 {
 	string msg;
 	GameState *caller;
+	int count = 0;
 public:
 	TextBox(Player *p, string _msg);
 	void run();

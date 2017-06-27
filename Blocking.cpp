@@ -26,13 +26,21 @@ void TextBox::run()
 	startMenu();
 	if (getKey(p,KEY_A) && !a)
 	{
-		p->popState();
-		return;
+		if (count >= msg.length())
+		{
+			p->popState();
+			return;
+		}
 	}
+	if (getKey(p, KEY_B) && !b)
+	{
+		count = msg.length();
+	}
+	count++;
 	endMenu();
 }
 
-void drawTextBox(string msg, int *count)
+void drawTextBox(string msg, int count)
 {
 	const int MAX_LINES = 4;
 	setDrawColor(0xFF, 0xFF, 0xFF, 0);
@@ -50,7 +58,7 @@ void drawTextBox(string msg, int *count)
 	int x = 0;
 	int i = 0;
 	int j = 0;
-	while (j < msg.length())
+	while (j < msg.length()&& j < count)
 	{
 		while (msg[j] != ' '&&j < msg.length()) j++;
 		if (x + j - i > WIDTH / 8 - 2)
@@ -68,14 +76,12 @@ void drawTextBox(string msg, int *count)
 		}
 		j++;
 	}
-	*count++;
 }
 
 void TextBox::draw()
 {
 	caller->draw();
-	int count;
-	drawTextBox(msg, &count);
+	drawTextBox(msg, count);
 }
 
 class OptionPane : public GameState
@@ -85,6 +91,7 @@ class OptionPane : public GameState
 	int numChoices;
 	string *output;
 	int choice = 0;
+	int count = 0;
 	GameState *caller;
 public:
 	OptionPane(Player *p, string msg, string choices[], int numChoices, string *output);
@@ -117,24 +124,28 @@ void OptionPane::run()
 	}
 	if (getKey(p,KEY_A) && !a)
 	{
-		*output = choices[choice];
-		p->popState();
-		return;
+		if (count >= msg.length())
+		{
+			*output = choices[choice];
+			p->popState();
+			return;
+		}
 	}
 	if (getKey(p,KEY_B) && !b)
 	{
-		*output = "null";
+		count = msg.length();
+		/**output = "null";
 		p->popState();
-		return;
+		return;*/
 	}
+	count++;
 	endMenu();
 }
 
 void OptionPane::draw()
 {
 	caller->draw();
-	int count = 0;
-	drawTextBox(msg, &count);
+	drawTextBox(msg, count);
 	chars['>']->draw(0, choice * 8);
 	for (int i = 0; i < numChoices; i++)
 	{
@@ -231,6 +242,7 @@ class NumberPane : public GameState
 	int choice, min, max;
 	int *output;
 	GameState*caller;
+	int count = 0;
 public:
 	NumberPane(Player *p, string msg, int start, int min, int max, int*output);
 	virtual void run();
@@ -250,8 +262,7 @@ NumberPane::NumberPane(Player *p, string msg, int start, int min, int max, int *
 void NumberPane::draw()
 {
 	caller->draw();
-	int count = 0;
-	drawTextBox(msg, &count);
+	drawTextBox(msg, count);
 	string num = to_string(choice);
 	for (int i = 0; i < num.length(); i++)
 	{
@@ -265,15 +276,19 @@ void NumberPane::run()
 	startMenu();
 	if (getKey(p,KEY_A) && !a)
 	{
-		*output = choice;
-		p->popState();
-		return;
+		if (count >= msg.length())
+		{
+			*output = choice;
+			p->popState();
+			return;
+		}
 	}
 	if (getKey(p,KEY_B) && !b)
 	{
-		*output = 0;
+		count = msg.length();
+		/**output = 0;
 		p->popState();
-		return;
+		return;*/
 	}
 	if (getKey(p,KEY_UP))
 	{
@@ -309,7 +324,7 @@ void NumberPane::run()
 		}
 	}
 	else delay = 0;
-
+	count++;
 	endMenu();
 }
 

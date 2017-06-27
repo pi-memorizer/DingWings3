@@ -12,6 +12,10 @@ bool nothing(Player *p, int x, int y) { //interact variant
 		bSelectItem(p,ITEM_FOOD);
 		return true;
 	}
+	if (x == -1 && y == 1)
+	{
+		bTextbox(p,"Hello this a test test that I hope goes well bye");
+	}
 	return false;
 }
 bool nothing(Player *p) //interact entity variant
