@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "World.h"
 #include "Sprite.h"
+#include "Event.h"
 
 GameState::GameState(Player *player)
 {
@@ -22,12 +23,12 @@ void GameState::startMenu()
 
 void GameState::endMenu()
 {
-	a = keys[p->keyA];
-	b = keys[p->keyB];
-	up = keys[p->keyUp];
-	down = keys[p->keyDown];
-	left = keys[p->keyLeft];
-	right = keys[p->keyRight];
+	a = getKey(p,KEY_A);
+	b = getKey(p,KEY_B);
+	up = getKey(p,KEY_UP);
+	down = getKey(p,KEY_DOWN);
+	left = getKey(p,KEY_LEFT);
+	right = getKey(p,KEY_RIGHT);
 }
 
 WorldState::WorldState(Player *player) : GameState(player)
@@ -37,15 +38,15 @@ WorldState::WorldState(Player *player) : GameState(player)
 
 void WorldState::draw()
 {
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0);
-	SDL_RenderClear(renderer);
+	setDrawColor(0xFF, 0xFF, 0xFF, 0);
+	clearScreen();
 	World *world = worlds[p->worldID];
-	for (int i = p->x - WIDTH / 32 / 2 - 2; i <= p->x + WIDTH / 32 / 2 + 2; i++)
+	for (int i = p->x - WIDTH / TILE_SIZE / 2 - 2; i <= p->x + WIDTH / TILE_SIZE / 2 + 2; i++)
 	{
-		for (int j = p->y - HEIGHT / 64 - 2; j <= p->y + HEIGHT / 64 + 2; j++)
+		for (int j = p->y - HEIGHT / TILE_SIZE / 2 - 2; j <= p->y + HEIGHT / TILE_SIZE / 2 + 2; j++)
 		{
 			int index = world->getLower(i, j);
-			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - 16 - p->xOffset + 32 * (i - p->x), HEIGHT / 2 - 16 - p->yOffset + 32 * (j - p->y));
+			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - TILE_SIZE/2 - p->xOffset + TILE_SIZE * (i - p->x), HEIGHT / 2 - TILE_SIZE/2 - p->yOffset + TILE_SIZE * (j - p->y));
 		}
 	}
 	List<Entity*> &entities = worlds[p->worldID]->entities;
@@ -59,36 +60,36 @@ void WorldState::draw()
 		}
 	}
 	p->getSprite()->draw(getOnscreenX(p, p->x, p->xOffset), getOnscreenY(p, p->y, p->yOffset));
-	for (int i = p->x - WIDTH / 32 / 2 - 2; i <= p->x + WIDTH / 32 / 2 + 2; i++)
+	for (int i = p->x - WIDTH / TILE_SIZE / 2 - 2; i <= p->x + WIDTH / TILE_SIZE / 2 + 2; i++)
 	{
-		for (int j = p->y - HEIGHT / 64 - 2; j <= p->y + HEIGHT / 64 + 2; j++)
+		for (int j = p->y - HEIGHT / TILE_SIZE / 2 - 2; j <= p->y + HEIGHT / TILE_SIZE / 2 + 2; j++)
 		{
 			int index = world->getUpper(i, j);
-			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - 16 - p->xOffset + 32 * (i - p->x), HEIGHT / 2 - 16 - p->yOffset + 32 * (j - p->y));
+			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - TILE_SIZE / 2 - p->xOffset + TILE_SIZE * (i - p->x), HEIGHT / 2 - TILE_SIZE / 2 - p->yOffset + TILE_SIZE * (j - p->y));
 		}
 	}
 }
 
 void offsetShift(Player *p)
 {
-	while (p->xOffset <= -32)
+	while (p->xOffset <= -TILE_SIZE)
 	{
-		p->xOffset += 32;
+		p->xOffset += TILE_SIZE;
 		p->x--;
 	}
-	while (p->yOffset <= -32)
+	while (p->yOffset <= -TILE_SIZE)
 	{
-		p->yOffset += 32;
+		p->yOffset += TILE_SIZE;
 		p->y--;
 	}
-	while (p->xOffset >= 32)
+	while (p->xOffset >= TILE_SIZE)
 	{
-		p->xOffset -= 32;
+		p->xOffset -= TILE_SIZE;
 		p->x++;
 	}
-	while (p->yOffset >= 32)
+	while (p->yOffset >= TILE_SIZE)
 	{
-		p->yOffset -= 32;
+		p->yOffset -= TILE_SIZE;
 		p->y++;
 	}
 }
@@ -128,10 +129,10 @@ void WorldState::run()
 		int dx = 0;
 		int dy = 0;
 		int _dir = p->dir;
-		if (keys[p->keyUp]) dy--;
-		if (keys[p->keyDown]) dy++;
-		if (keys[p->keyLeft]) dx--;
-		if (keys[p->keyRight]) dx++;
+		if (getKey(p,KEY_UP)) dy--;
+		if (getKey(p,KEY_DOWN)) dy++;
+		if (getKey(p,KEY_LEFT)) dx--;
+		if (getKey(p,KEY_RIGHT)) dx++;
 		if (p->dir == 0 && dx > 0)
 		{
 		}
@@ -160,27 +161,27 @@ void WorldState::run()
 			p->wait = 0;
 		p->wait++;
 		int sight = 1;
-		if (keys[p->keyA] && !a)
+		if (getKey(p,KEY_A) && !a)
 		{
 			bool mapInteract = false;
 			if (p->dir == 0)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(32 * p->x + p->xOffset + p->width + sight, 32), safeDiv(32 * p->y + p->yOffset + p->height / 2, 32)))
+				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width + sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 1)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(32 * p->x + p->xOffset + p->width / 2, 32), safeDiv(32 * p->y + p->yOffset - sight, 32)))
+				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset - sight, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 2)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(32 * p->x + p->xOffset - sight, 32), safeDiv(32 * p->y + p->yOffset + p->height / 2, 32)))
+				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset - sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 3)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(32 * p->x + p->xOffset + p->width / 2, 32), safeDiv(32 * p->y + p->yOffset + p->height + sight, 32)))
+				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height + sight, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (!mapInteract)
@@ -191,30 +192,30 @@ void WorldState::run()
 				int y = 0;
 				if (p->dir == 0)
 				{
-					x = 32 * p->x + p->xOffset + p->width + sight;
-					y = 32 * p->y + p->yOffset + p->height / 2;
+					x = TILE_SIZE * p->x + p->xOffset + p->width + sight;
+					y = TILE_SIZE * p->y + p->yOffset + p->height / 2;
 				}
 				else if (p->dir == 1)
 				{
-					x = 32 * p->x + p->xOffset + p->width / 2;
-					y = 32 * p->y + p->yOffset - sight;
+					x = TILE_SIZE * p->x + p->xOffset + p->width / 2;
+					y = TILE_SIZE * p->y + p->yOffset - sight;
 				}
 				else if (p->dir == 2)
 				{
-					x = 32 * p->x + p->xOffset - sight;
-					y = 32 * p->y + p->yOffset + p->height / 2;
+					x = TILE_SIZE * p->x + p->xOffset - sight;
+					y = TILE_SIZE * p->y + p->yOffset + p->height / 2;
 				}
 				else if (p->dir == 3)
 				{
-					x = 32 * p->x + p->xOffset + p->width / 2;
-					y = 32 * p->y + p->yOffset + p->height + sight;
+					x = TILE_SIZE * p->x + p->xOffset + p->width / 2;
+					y = TILE_SIZE * p->y + p->yOffset + p->height + sight;
 				}
 				for (int i = 0; i < entities.length(); i++)
 				{
 					Entity *e = entities[i];
 					if (e->isAlive)
 					{
-						if (rectCollides(x, y, 2, 2, 32 * e->x + e->xOffset, 32 * e->y + e->yOffset, e->width, e->height))
+						if (rectCollides(x, y, 2, 2, TILE_SIZE * e->x + e->xOffset, TILE_SIZE * e->y + e->yOffset, e->width, e->height))
 						{
 							if (e->interact(p))
 							{

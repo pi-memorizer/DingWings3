@@ -2,28 +2,9 @@
 #define SOUNDSYSTEM_H
 #include "Revengine.h"
 
-class Sound;
-
-class SoundSystem
-{
-	string song;
-	Mix_Music *music;
-public:
-	SoundSystem();
-	~SoundSystem();
-	void setBackgroundMusic(string name);
-};
-
-class Sound
-{
-	Mix_Chunk *chunk;
-public:
-	Sound(string name);
-	~Sound();
-	void play();
-};
-
-extern SoundSystem *soundSystem;
-extern Sound *sounds[];
+void createSound(string name);
+void createSong(string name);
+void setBackgroundMusic(string name);
+void playSound(string name);
 
 #endif

@@ -4,16 +4,6 @@
 #define DEBUG true
 //#define UNIX true
 
-#ifndef UNIX
-	#include "SDL.h"
-	#include "SDL_mixer.h"
-	#include "SDL_image.h"
-#else
-	#include "SDL/SDL.H"
-	#include "SDL/SDL_mixer.h"
-	#include "SDL/SDL_image.h"
-#endif
-
 #include <string>
 #include "Collections.h"
 using namespace std;
@@ -28,14 +18,15 @@ using namespace std;
 	#define debug(a) ;;
 #endif
 
-void quitSDL();
-extern SDL_Window *window;
-extern SDL_Renderer *renderer;
+void delay(int millis);
+int startGame();
+void exitGame();
 extern string *args;
 extern int numArgs;
 
 #define WIDTH 320
 #define HEIGHT 240
+#define TILE_SIZE 32
 
 class Sprite;
 class GameState;
@@ -48,7 +39,6 @@ class WorldState;
 class Entity;
 class Item;
 
-extern Hashmap<int, bool> keys;
 extern Hashmap<string, int> flags;
 int getFlag(string s);
 void setFlag(string s, int value);

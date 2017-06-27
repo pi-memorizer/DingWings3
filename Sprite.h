@@ -1,12 +1,14 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 #include "Revengine.h"
+#include "Graphics.h"
 using namespace std;
+
 
 class Sprite
 {
-	SDL_Texture *sprite = nullptr;
-	SDL_Rect source;
+	Texture *sprite = nullptr;
+	Rect source;
 	int xOffset = 0, yOffset = 0;
 	bool hasOwnership = true;
 

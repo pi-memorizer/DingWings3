@@ -44,10 +44,3 @@ Item * addItem(string name)
 		return i;
 	}
 }
-
-void addItems()
-{
-	addItem("null")
-		->_flags(ITEM_FOOD|ITEM_FURNITURE)
-		->_displayName("Nothing");
-}

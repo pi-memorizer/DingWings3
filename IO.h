@@ -8,20 +8,24 @@ using namespace std;
 void save();
 void load();
 
-unsigned char readByte(SDL_RWops*file);
-unsigned short readUShort(SDL_RWops * file);
-unsigned int readUInt(SDL_RWops * file);
-unsigned long long readULong(SDL_RWops * file);
-char readChar(SDL_RWops * file);
-short readShort(SDL_RWops * file);
-int readInt(SDL_RWops * file);
-long long readLong(SDL_RWops * file);
-string readString(SDL_RWops * file);
-void writeByte(SDL_RWops *file, unsigned char v);
-void writeChar(SDL_RWops * file, char v);
-void writeShort(SDL_RWops * file, short v);
-void writeInt(SDL_RWops * file, int v);
-void writeLong(SDL_RWops * file, long long v);
-void writeString(SDL_RWops * file, string v);
+class File;
+File * openFile(string s, bool writing);
+void closeFile(File *file);
+
+unsigned char readByte(File*file);
+unsigned short readUShort(File * file);
+unsigned int readUInt(File * file);
+unsigned long long readULong(File * file);
+char readChar(File * file);
+short readShort(File * file);
+int readInt(File * file);
+long long readLong(File * file);
+string readString(File * file);
+void writeByte(File *file, unsigned char v);
+void writeChar(File * file, char v);
+void writeShort(File * file, short v);
+void writeInt(File * file, int v);
+void writeLong(File * file, long long v);
+void writeString(File * file, string v);
 
 #endif

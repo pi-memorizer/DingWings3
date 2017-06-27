@@ -14,7 +14,7 @@ StaticWorld::StaticWorld(string filename, void(*run)(), bool(*interact)(Player*,
 {
 	_run = run;
 	_interact = interact;
-	SDL_RWops *file = SDL_RWFromFile(("map/" + filename + ".rmap").c_str(), "r+b");
+	File *file = openFile(("map/" + filename + ".rmap").c_str(), false);
 	if (file != nullptr)
 	{
 		width = readInt(file);
@@ -33,7 +33,7 @@ StaticWorld::StaticWorld(string filename, void(*run)(), bool(*interact)(Player*,
 				map[i].collision = readByte(file);
 			}
 		}
-		SDL_RWclose(file);
+		closeFile(file);
 		debug("Read map " + filename);
 		debug(width << ", " << height << ", " << xOffset << ", " << yOffset);
 	}
@@ -79,7 +79,7 @@ bool StaticWorld::subCollision(int x, int y, int px, int py, int pwidth, int phe
 	if (c == 0) return false;
 	if (c <= 16)
 	{
-		return rectCollides(px, py, pwidth, pheight, x * 32 + 16 - c, y * 32 + 16 - c, 2 * c, 2 * c);
+		return rectCollides(px, py, pwidth, pheight, x * TILE_SIZE + TILE_SIZE/2 - c, y * TILE_SIZE + TILE_SIZE/2 - c, 2 * c, 2 * c);
 	}
 	return false;
 }
@@ -88,11 +88,11 @@ bool StaticWorld::collides(int x, int y, int xOffset, int yOffset, int width, in
 {
 	assert(width > 0);
 	assert(height > 0);
-	int _x = x * 32 + xOffset;
-	int _y = y * 32 + yOffset;
-	for (int cx = safeDiv(_x, 32); cx <= safeDiv(_x + width, 32); cx++)
+	int _x = x * TILE_SIZE + xOffset;
+	int _y = y * TILE_SIZE + yOffset;
+	for (int cx = safeDiv(_x, TILE_SIZE); cx <= safeDiv(_x + width, TILE_SIZE); cx++)
 	{
-		for (int cy = safeDiv(_y, 32); cy <= safeDiv(_y + height, 32); cy++)
+		for (int cy = safeDiv(_y, TILE_SIZE); cy <= safeDiv(_y + height, TILE_SIZE); cy++)
 		{
 			if (subCollision(cx, cy, _x, _y, width, height)) return true;
 		}

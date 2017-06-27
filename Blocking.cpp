@@ -3,6 +3,7 @@
 #include "GameState.h"
 #include "Sprite.h"
 #include "Item.h"
+#include "Event.h"
 
 ApplicationClosingException::ApplicationClosingException()
 {
@@ -23,7 +24,7 @@ void TextBox::run()
 {
 	caller->run();
 	startMenu();
-	if (keys[p->keyA] && !a)
+	if (getKey(p,KEY_A) && !a)
 	{
 		p->popState();
 		return;
@@ -34,13 +35,13 @@ void TextBox::run()
 void drawTextBox(string msg, int *count)
 {
 	const int MAX_LINES = 4;
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0);
-	SDL_Rect rect;
+	setDrawColor(0xFF, 0xFF, 0xFF, 0);
+	Rect rect;
 	rect.x = 0;
 	rect.w = WIDTH;
 	rect.h = 8 + 2 * MAX_LINES * 8;
 	rect.y = HEIGHT - rect.h;
-	SDL_RenderFillRect(renderer, &rect);
+	fillRect(&rect);
 	/*for (int i = 0; i < msg.length(); i++)
 	{
 	chars[msg[i]]->draw(8 + 8 * i, rect.y + 8);
@@ -104,23 +105,23 @@ void OptionPane::run()
 {
 	caller->run();
 	startMenu();
-	if (keys[p->keyUp] && !up)
+	if (getKey(p,KEY_UP) && !up)
 	{
 		choice--;
 		if (choice < 0) choice = numChoices - 1;
 	}
-	if (keys[p->keyDown] && !down)
+	if (getKey(p,KEY_DOWN) && !down)
 	{
 		choice++;
 		if (choice >= numChoices) choice = 0;
 	}
-	if (keys[p->keyA] && !a)
+	if (getKey(p,KEY_A) && !a)
 	{
 		*output = choices[choice];
 		p->popState();
 		return;
 	}
-	if (keys[p->keyB] && !b)
+	if (getKey(p,KEY_B) && !b)
 	{
 		*output = "null";
 		p->popState();
@@ -262,19 +263,19 @@ void NumberPane::run()
 {
 	caller->run();
 	startMenu();
-	if (keys[p->keyA] && !a)
+	if (getKey(p,KEY_A) && !a)
 	{
 		*output = choice;
 		p->popState();
 		return;
 	}
-	if (keys[p->keyB] && !b)
+	if (getKey(p,KEY_B) && !b)
 	{
 		*output = 0;
 		p->popState();
 		return;
 	}
-	if (keys[p->keyUp])
+	if (getKey(p,KEY_UP))
 	{
 		if (!up)
 		{
@@ -290,7 +291,7 @@ void NumberPane::run()
 			}
 			else delay++;
 		}
-	} else if (keys[p->keyDown])
+	} else if (getKey(p,KEY_DOWN))
 	{
 		if (!down)
 		{
@@ -365,11 +366,11 @@ void InventoryDialogue::run()
 	int index = 0;
 	const int MOVE_AMOUNT = 100;
 	startMenu();
-	if (keys[p->keyA] && !a)
+	if (getKey(p,KEY_A) && !a)
 	{
 		if (p->inventory[index].item != nullptr)
 		{
-			if (categories == p->inventory[index].item->flags&categories)
+			if (categories == (p->inventory[index].item->flags&categories))
 			{
 				*output = p->inventory[index].item;
 				p->popState();
@@ -382,25 +383,25 @@ void InventoryDialogue::run()
 			return;
 		}
 	}
-	if (keys[p->keyB] && !b)
+	if (getKey(p,KEY_B) && !b)
 	{
 		*output = nullptr;
 		p->popState();
 		return;
 	}
-	if (keys[p->keyUp] && !up)
+	if (getKey(p,KEY_UP) && !up)
 	{
 		pointerY -= MOVE_AMOUNT;
 	}
-	if (keys[p->keyDown] && !down)
+	if (getKey(p,KEY_DOWN) && !down)
 	{
 		pointerY += MOVE_AMOUNT;
 	}
-	if (keys[p->keyLeft] && !left)
+	if (getKey(p,KEY_LEFT) && !left)
 	{
 		pointerX -= MOVE_AMOUNT;
 	}
-	if (keys[p->keyRight] && !right)
+	if (getKey(p,KEY_RIGHT) && !right)
 	{
 		pointerX += MOVE_AMOUNT;
 	}

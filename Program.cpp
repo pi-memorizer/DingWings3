@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "IO.h"
 #include "Item.h"
+#include "Graphics.h"
+#include "Event.h"
 using namespace std;
 
 string *args = nullptr;
@@ -17,7 +19,6 @@ int numArgs = 0;
 
 bool fullscreen = true;
 int screenWidth = WIDTH, screenHeight = HEIGHT;
-SDL_DisplayMode displayMode;
 
 #ifdef main
 #undef main
@@ -32,38 +33,13 @@ int main(int argc, char **argv)
 	{
 		args[i] = string(argv[i]);
 	}
-	if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-	{
-		return -2;
-	}
-	if (IMG_Init(IMG_INIT_PNG) < 0)
-	{
-		quitSDL();
-		return -3;
-	}
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048)<0)
-	{
-		quitSDL();
-		return -4;
-	}
 
-	soundSystem = new SoundSystem();
-	sounds[0] = new Sound("door");
-
-	SDL_GetDesktopDisplayMode(0, &displayMode);
-	window = SDL_CreateWindow("Revengine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
-	if (window == nullptr)
+	if (startGame() != 0)
 	{
-		quitSDL();
 		return -1;
 	}
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == nullptr)
-	{
-		quitSDL();
-		return -1;
-	}
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+
+	createSound("door");
 
 	//load sprites
 	Sprite *guySheet = new Sprite("guy", 0, 0);
@@ -83,7 +59,7 @@ int main(int argc, char **argv)
 			Sprite *s = new Sprite("tileset" + to_string(i+1), 0, 0);
 			for (int j = 0; j < 256; j++)
 			{
-				tileset[i * 256 + j] = new Sprite(s, 32 * (j % 16), 32 * (j / 16), 32, 32, 0, 0);
+				tileset[i * 256 + j] = new Sprite(s, TILE_SIZE * (j % 16), TILE_SIZE * (j / 16), TILE_SIZE, TILE_SIZE, 0, 0);
 			}
 		}
 		catch (int) {
@@ -96,16 +72,12 @@ int main(int argc, char **argv)
 		chars[i] = new Sprite(s, 8 * (i % 16), 8 * (i / 16), 8, 8, 0, 0);
 	}
 
-	//add keys
-	for (int i = SDLK_a; i < SDLK_z; i++)
-		keys.add(i, false);
-	keys.add(SDLK_F4, false);
+	addPlayer(0);
 
-	addPlayer(0,SDLK_d,SDLK_w,SDLK_a,SDLK_s,SDLK_j,SDLK_k);
-
-	addItems();
 	init();
 	load();
+
+	setBackgroundMusic("PossibleTheme");
 
 	try {
 		while (theLoop());
@@ -114,63 +86,57 @@ int main(int argc, char **argv)
 	{
 		debug("Application closing exception caught");
 	}
-	quitSDL();
+	exitGame();
 	return 0;
 }
 
 bool theLoop()
 {
-	SDL_Event e;
-	while (SDL_PollEvent(&e))
+	Event e;
+	while (getEvent(&e))
 	{
-		if (e.type == SDL_QUIT)
+		if (e.type == EVENT_QUIT)
 		{
 			return false;
 		}
-		else if (e.type == SDL_KEYDOWN)
+		else if (e.type == EVENT_KEY_DOWN)
 		{
-			if (e.key.keysym.sym == SDLK_F4 && !keys[SDLK_F4])
+			if (e.keys.key == KEY_FULLSCREEN && !e.keys.prevState)
 			{
 				if (fullscreen)
 				{
-					SDL_SetWindowFullscreen(window, 0);
-					SDL_SetWindowSize(window, 2 * WIDTH, 2 * HEIGHT);
-					SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+					setWindowFullscreen(false);
+					setWindowSize(2 * WIDTH, 2 * HEIGHT);
+					centerWindow();
 				}
 				else {
-					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-					SDL_SetWindowSize(window, displayMode.w, displayMode.h);
+					setWindowFullscreen(true);
+					setWindowSize(getScreenWidth(), getScreenHeight());
 				}
 				fullscreen = !fullscreen;
 			}
-			if (keys.contains(e.key.keysym.sym))
-			{
-				keys[e.key.keysym.sym] = true;
-			}
-			if (e.key.keysym.sym == SDLK_ESCAPE)
+			if (e.keys.key == KEY_ESCAPE)
 			{
 				return false;
 			}
 		}
-		else if (e.type == SDL_KEYUP)
+		else if (e.type == EVENT_KEY_UP)
 		{
-			if (keys.contains(e.key.keysym.sym))
-			{
-				keys[e.key.keysym.sym] = false;
-			}
+
 		}
 	}
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderClear(renderer);
+
+	setDrawColor(0, 0, 0, 0);
+	clearScreen();
 
 	int width;
 	int height;
-	SDL_GetWindowSize(window, &width, &height);
+	getWindowSize(&width, &height);
 	float wRat = width / (float)screenWidth;
 	float hRat = height / (float)screenHeight;
 	if (numPlayers == 1)
 	{
-		SDL_Rect rect;
+		Rect rect;
 		if (wRat < hRat)
 		{
 			int newHeight = (int)(width / (float)WIDTH * (float)HEIGHT);
@@ -187,18 +153,18 @@ bool theLoop()
 			rect.x = (width - newWidth) / 2;
 			rect.y = 0;
 		}
-		SDL_SetRenderTarget(renderer, players[0]->texture);
+		startDrawingPlayer(0);
 		players[0]->draw();
-		SDL_SetRenderTarget(renderer, nullptr);
-		SDL_RenderCopy(renderer, players[0]->texture, nullptr, &rect);
+		startDrawingPlayer(-1);
+		drawTexture(players[0]->texture, &rect);
 	}
-	SDL_RenderPresent(renderer);
+	display();
 
 	for (int i = 0; i < numPlayers; i++)
 	{
 		players[i]->run();
 	}
 
-	SDL_Delay(16);
+	delay(16);
 	return true;
 }

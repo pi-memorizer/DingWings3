@@ -26,4 +26,7 @@ void init()
 	worlds.add(test);
 	Entity *testEntity = new Entity(test, -4, 9, 32, 32, nullptr, &nothing, &nothing);
 	test->addEntity(testEntity);
+	addItem("null")
+		->_flags(ITEM_FOOD | ITEM_FURNITURE)
+		->_displayName("Nothing");
 }

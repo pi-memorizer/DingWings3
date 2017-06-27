@@ -21,6 +21,5 @@ public:
 extern Hashmap<string, Item*> items;
 
 Item* addItem(string name);
-void addItems();
 
 #endif

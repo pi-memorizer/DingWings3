@@ -23,7 +23,7 @@ Player *getPlayer(int id)
 		return players[index];
 }
 
-void addPlayer(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int keyA, int keyB)
+void addPlayer(int id)
 {
 	int index = -1;
 	for (int i = 0; i < numPlayers; i++)
@@ -41,7 +41,7 @@ void addPlayer(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int ke
 		{
 			buffer[i] = players[i];
 		}
-		buffer[numPlayers] = new Player(id, keyRight, keyUp, keyLeft, keyDown, keyA, keyB);
+		buffer[numPlayers] = new Player(id);
 		delete[] players;
 		players = buffer;
 		numPlayers++;
@@ -77,15 +77,9 @@ void removePlayer(int id)
 	}
 }
 
-Player::Player(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int keyA, int keyB)
+Player::Player(int id)
 {
 	this->id = id;
-	this->keyUp = keyUp;
-	this->keyDown = keyDown;
-	this->keyLeft = keyLeft;
-	this->keyRight = keyRight;
-	this->keyA = keyA;
-	this->keyB = keyB;
 	x = -2;
 	y = -2;
 	xOffset = 0;
@@ -93,7 +87,7 @@ Player::Player(int id, int keyRight, int keyUp, int keyLeft, int keyDown, int ke
 	worldID = 0;
 	width = 16;
 	height = 16;
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
+	texture = createTexture(WIDTH, HEIGHT);
 	pushState(new WorldState(this));
 	for (int i = 0; i < INVENTORY_SLOTS; i++)
 	{

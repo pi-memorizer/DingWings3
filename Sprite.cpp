@@ -1,11 +1,12 @@
 #include "Sprite.h"
+#include "Graphics.h"
 
 Sprite::Sprite(string filename, int xOffset, int yOffset)
 {
-	sprite = IMG_LoadTexture(renderer, ("image/"+filename+".png").c_str());
+	sprite = loadTexture(filename);
 	if (sprite != nullptr)
 	{
-		SDL_QueryTexture(sprite, nullptr, nullptr, &source.w, &source.h);
+		getTextureSize(sprite, &source.w, &source.h);
 		source.x = 0;
 		source.y = 0;
 		this->xOffset = xOffset;
@@ -35,13 +36,13 @@ Sprite::~Sprite()
 {
 	if (hasOwnership)
 	{
-		SDL_DestroyTexture(sprite);
+		destroyTexture(sprite);
 	}
 }
 
 void Sprite::draw(int x, int y)
 {
-	SDL_Rect d;
+	Rect d;
 	if (this == nullptr)
 	{
 		cout << "wat" << endl;
@@ -51,7 +52,7 @@ void Sprite::draw(int x, int y)
 	d.w = source.w;
 	d.x = x + xOffset;
 	d.y = y + yOffset;
-	SDL_RenderCopy(renderer, sprite, &source, &d);
+	drawTexture(sprite, &source, &d);
 }
 
 List<Sprite*> sprites;

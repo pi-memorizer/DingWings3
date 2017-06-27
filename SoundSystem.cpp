@@ -1,5 +1,5 @@
 #include "SoundSystem.h"
-
+/*
 SoundSystem *soundSystem;
 Sound *sounds[1024];
 
@@ -62,4 +62,4 @@ void Sound::play()
 		cout << "Error playing sound" << endl;
 #endif
 	}
-}
+}*/
