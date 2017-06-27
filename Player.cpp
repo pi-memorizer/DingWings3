@@ -2,6 +2,7 @@
 #include "GameState.h"
 #include "Sprite.h"
 #include "Item.h"
+#include <random>
 
 Player **players = new Player*[0];
 int numPlayers = 0;

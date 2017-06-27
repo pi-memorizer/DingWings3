@@ -1,5 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
+#include <string>
+using namespace std;
 
 struct Rect
 {

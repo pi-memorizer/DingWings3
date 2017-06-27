@@ -10,6 +10,8 @@
 #include "Event.h"
 using namespace std;
 
+string to_string(int value);
+
 string *args = nullptr;
 int numArgs = 0;
 
