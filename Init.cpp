@@ -18,7 +18,7 @@ bool nothing(Player *p, int x, int y) { //interact variant
 	}
 	if (x == -1 && y == 1)
 	{
-		bTextbox(p,"Hello this a test test that I hope goes well bye");
+		bTextbox(p,"Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye");
 	}
 	return false;
 }
@@ -59,12 +59,7 @@ void init()
 		catch (int) {
 		}
 	}
-	Sprite *s = new Sprite("charset", 0, 0);
-	chars = new Sprite*[256];
-	for (int i = 0; i < 256; i++)
-	{
-		chars[i] = new Sprite(s, 8 * (i % 16), 8 * (i / 16), 8, 8, 0, 0);
-	}
+
 	//add entities to worlds and stuff here preferably
 	World *test = new StaticWorld("test", &enterNothing,&nothing, &nothing);
 	worlds.add(test);
@@ -76,5 +71,5 @@ void init()
 
 	load();
 
-	setBackgroundMusic("PossibleTheme");
+	//setBackgroundMusic("PossibleTheme");
 }

@@ -22,6 +22,8 @@ using namespace std;
 #define HEIGHT 240
 #define TILE_SIZE 32
 
+extern int frames;
+
 class Sprite;
 class GameState;
 class Textbox;

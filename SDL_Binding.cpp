@@ -22,6 +22,7 @@ SDL_DisplayMode displayMode;
 Hashmap<string, Mix_Chunk*> sounds;
 Mix_Music *music;
 string song;
+Sprite ***chars;
 
 class File
 {
@@ -115,6 +116,22 @@ void drawTexture(Texture *texture, Rect *source, Rect *dest)
 	SDL_RenderCopy(renderer, texture->texture, &s, &d);
 }
 
+void drawTexture(Texture *texture, Rect *source, Rect *dest, int alpha)
+{
+	SDL_Rect s, d;
+	s.w = source->w;
+	s.h = source->h;
+	s.x = source->x;
+	s.y = source->y;
+	d.w = dest->w;
+	d.h = dest->h;
+	d.x = dest->x;
+	d.y = dest->y;
+	SDL_SetTextureAlphaMod(texture->texture, (unsigned char)alpha);
+	SDL_RenderCopy(renderer, texture->texture, &s, &d);
+	SDL_SetTextureAlphaMod(texture->texture, 255);
+}
+
 Texture *createTexture(int width, int height)
 {
 	Texture * t = new Texture();
@@ -132,6 +149,14 @@ Texture *loadTexture(string filename)
 void getTextureSize(Texture *t, int *w, int *h)
 {
 	SDL_QueryTexture(t->texture, nullptr, nullptr, w, h);
+}
+
+void drawCharacter(char c, int x, int y, int r, int g, int b)
+{
+	chars[0][c]->draw(x, y, 255);
+	if(r>0)chars[1][c]->draw(x, y, r);
+	if(g>0)chars[2][c]->draw(x, y, g);
+	if(b>0)chars[3][c]->draw(x, y, b);
 }
 
 void destroyTexture(Texture *texture)
@@ -189,6 +214,18 @@ int startGame()
 	keys.add(SDLK_F4, false);
 	keys.add(SDLK_F11, false);
 	keys.add(SDLK_ESCAPE, false);
+	chars = new Sprite**[4];
+	for (int j = 0; j < 4; j++)
+	{
+		Sprite *s = new Sprite("charset" + to_string(j), 0, 0);
+		chars[j] = new Sprite*[256];
+		for (int i = 0; i < 256; i++)
+		{
+			Sprite *sprite = new Sprite(s, 8 * (i % 16), 8 * (i / 16), 8, 8, 0, 0);
+			chars[j][i] = sprite;
+			if(j!=0)SDL_SetTextureBlendMode(sprite->sprite->texture, SDL_BLENDMODE_ADD);
+		}
+	}
 	return 0;
 }
 

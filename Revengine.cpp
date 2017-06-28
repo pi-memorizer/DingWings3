@@ -7,6 +7,7 @@
 string to_string(int value);
 #endif
 
+int frames = 0;
 Hashmap<string, int> flags;
 int screenWidth = WIDTH, screenHeight = HEIGHT;
 
@@ -69,6 +70,7 @@ bool theLoop()
 	}
 
 	delay(16);
+	frames++;
 	return true;
 }
 

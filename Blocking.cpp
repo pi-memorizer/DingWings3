@@ -4,6 +4,7 @@
 #include "Sprite.h"
 #include "Item.h"
 #include "Event.h"
+#include <cmath>
 
 
 #ifdef MOBILE
@@ -39,47 +40,124 @@ void TextBox::run()
 	}
 	if (getKey(p, KEY_B) && !b)
 	{
-		count = msg.length();
+		count = 1000000;
 	}
 	count++;
 	endMenu();
+}
+
+int findNextSpace(string msg, int position)
+{
+	int j = 0;
+	for (int i = position; i < msg.length(); i++)
+	{
+		if (msg[i] == '<')
+		{
+			if (msg[i + 1] == '<')
+			{
+				i++;
+				j++;
+			}
+			else {
+				while (msg[i] != '>') i++;
+			}
+		} else 
+		if (msg[i] == ' ')
+		{
+			return j;
+		}
+		else {
+			j++;
+		}
+	}
+	return msg.length()-position;
+}
+
+int hexChar(char c)
+{
+	if (c >= 'A'&&c <= 'F')
+		return c - 'A' + 10;
+	else if (c >= '0'&&c <= '9')
+		return c - '0';
+	return 0;
 }
 
 void drawTextBox(string msg, int count)
 {
 	const int MAX_LINES = 4;
 	setDrawColor(0xFF, 0xFF, 0xFF, 0);
+	int r = 0;
+	int g = 0;
+	int b = 0;
 	Rect rect;
 	rect.x = 0;
 	rect.w = WIDTH;
 	rect.h = 8 + 2 * MAX_LINES * 8;
 	rect.y = HEIGHT - rect.h;
 	fillRect(&rect);
-	/*for (int i = 0; i < msg.length(); i++)
-	{
-	chars[msg[i]]->draw(8 + 8 * i, rect.y + 8);
-	}*/
+
 	int line = 1;
 	int x = 0;
-	int i = 0;
 	int j = 0;
-	while (j < msg.length()&& j < count)
+	float f = 0.0;
+	float df = 1.0;
+	int width = WIDTH / 8 - 2;
+	int wave = 0;
+	int nextSpace = findNextSpace(msg, 0);
+	while (j < msg.length()&& (int)f < count)
 	{
-		while (msg[j] != ' '&&j < msg.length()) j++;
-		if (x + j - i > WIDTH / 8 - 2)
+		if (msg[j] == '<')
+		{
+			if (msg[j + 1] != '<')
+			{
+				j++;
+				while (msg[j] != '>')
+				{
+					switch (msg[j])
+					{
+					case 's':
+						df = (float)(msg[j + 1] - '0') + .1*(msg[j + 2] - '0') + .01*(msg[j + 3] - '0');
+						df = 1 / df;
+						j += 4;
+						break;
+					case 'c':
+						r = hexChar(msg[j + 1]) * 16 + hexChar(msg[j + 2]);
+						g = hexChar(msg[j + 3]) * 16 + hexChar(msg[j + 4]);
+						b = hexChar(msg[j + 5]) * 16 + hexChar(msg[j + 6]);
+						j += 7;
+						break;
+					case 'w':
+						wave = (msg[j+1]-'0');
+						j += 2;
+						break;
+					default:
+						j++;
+						break;
+					}
+				}
+			}
+			j++;
+		}
+		if (msg[j] == '\n')
+		{
+			line++;
+			x = 0;
+			j++;
+		}
+		if (nextSpace > width - x)
 		{
 			line++;
 			x = 0;
 		}
-		for (; i < j; i++)
-		{
-			if (!(x == 0 && msg[i] == ' '))
-			{
-				chars[msg[i]]->draw(8 + 8 * x, rect.y + 8 * line);
-				x++;
-			}
-		}
+
+		int y = rect.y + 8 * line;
+		if (wave!=0) y += sin(((frames + (int)f) / 5.0))*wave;
+		drawCharacter(msg[j], 8 + 8 * x, y,r,g,b);
+
 		j++;
+		nextSpace = findNextSpace(msg, j);
+		x++;
+		f += df;
 	}
 }
 
@@ -138,7 +216,7 @@ void OptionPane::run()
 	}
 	if (getKey(p,KEY_B) && !b)
 	{
-		count = msg.length();
+		count = 1000000;
 		/**output = "null";
 		p->popState();
 		return;*/
@@ -151,13 +229,13 @@ void OptionPane::draw()
 {
 	caller->draw();
 	drawTextBox(msg, count);
-	chars['>']->draw(0, choice * 8);
+	drawCharacter('>', 0, choice * 8, 0,0,0);
 	for (int i = 0; i < numChoices; i++)
 	{
 		int length = choices[i].length();
 		for (int j = 0; j < length; j++)
 		{
-			chars[choices[i][j]]->draw(WIDTH - 8 * length + j * 8, i * 8);
+			drawCharacter(choices[i][j],WIDTH - 8 * length + j * 8, i * 8,0,0,0);
 		}
 	}
 }
@@ -271,7 +349,7 @@ void NumberPane::draw()
 	string num = to_string(choice);
 	for (int i = 0; i < num.length(); i++)
 	{
-		chars[num[i]]->draw(i * 8, 0);
+		drawCharacter(num[i], i * 8, 0, 0, 0, 0);
 	}
 }
 
@@ -290,7 +368,7 @@ void NumberPane::run()
 	}
 	if (getKey(p,KEY_B) && !b)
 	{
-		count = msg.length();
+		count = 1000000;
 		/**output = 0;
 		p->popState();
 		return;*/

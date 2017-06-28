@@ -55,4 +55,19 @@ void Sprite::draw(int x, int y)
 	drawTexture(sprite, &source, &d);
 }
 
+void Sprite::draw(int x, int y, int alpha)
+{
+	Rect d;
+	if (this == nullptr)
+	{
+		cout << "wat" << endl;
+		return;
+	}
+	d.h = source.h;
+	d.w = source.w;
+	d.x = x + xOffset;
+	d.y = y + yOffset;
+	drawTexture(sprite, &source, &d, alpha);
+}
+
 List<Sprite*> sprites;

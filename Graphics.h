@@ -18,9 +18,11 @@ int getScreenWidth();
 int getScreenHeight();
 void drawTexture(Texture *texture, Rect *rect);
 void drawTexture(Texture *texture, Rect *source, Rect *dest);
+void drawTexture(Texture *texture, Rect *source, Rect *dest, int alpha);
 Texture *createTexture(int width, int height);
 void fillRect(Rect *r);
 Texture *loadTexture(string filename);
 void getTextureSize(Texture *texture, int *w, int *h);
 void destroyTexture(Texture *texture);
+void drawCharacter(char c, int x, int y, int r, int g, int b);
 #endif
