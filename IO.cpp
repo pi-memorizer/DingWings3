@@ -4,20 +4,20 @@
 #include "Player.h"
 #include "World.h"
 
-void savePlayer(File * file, Player *p)
+void loadPlayer(File * file, Player *p)
 {
 	p->dir = readByte(file);
-	p->worldID = readShort(file);
+	p->setWorldID(readShort(file));
 	p->x = readInt(file);
 	p->y = readInt(file);
 	p->xOffset = readChar(file);
 	p->yOffset = readChar(file);
 }
 
-void loadPlayer(File *file, Player *p)
+void savePlayer(File *file, Player *p)
 {
 	writeByte(file, (char)p->dir);
-	writeShort(file, (short)p->worldID);
+	writeShort(file, (short)p->getWorldID());
 	writeInt(file, p->x);
 	writeInt(file, p->y);
 	writeChar(file, (char)p->xOffset);

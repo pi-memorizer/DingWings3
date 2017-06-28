@@ -3,6 +3,7 @@
 #include "Revengine.h"
 
 void bTextbox(Player *p, string s);
+void bTextbox(Player *p, string s, bool skippable);
 string bOptionPane(Player *p, string msg, string choices[], int numChoices);
 string bOptionPane(Player *p, string msg, string choice1, string choice2);
 string bOptionPane(Player *p, string msg, string choice1, string choice2, string choice3);

@@ -16,6 +16,7 @@ struct ItemNumberPair
 class Player
 {
 	Stack<GameState*> states;
+	int worldID;
 public:
 	ItemNumberPair inventory[INVENTORY_SLOTS];
 	int width, height;
@@ -23,7 +24,6 @@ public:
 	Texture *texture;
 	int x, y, xOffset, yOffset;
 	int id;
-	int worldID;
 	Player(int id);
 	GameState *getState();
 	void pushState(GameState *state);
@@ -37,6 +37,8 @@ public:
 	ItemNumberPair* getItem(Item *item);
 	ItemNumberPair* getItem(unsigned long long flag);
 	int itemCount(Item *item);
+	int getWorldID();
+	void setWorldID(int id);
 };
 
 Player* getPlayer(int id);

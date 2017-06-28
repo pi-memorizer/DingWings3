@@ -18,7 +18,7 @@ bool nothing(Player *p, int x, int y) { //interact variant
 	}
 	if (x == -1 && y == 1)
 	{
-		bTextbox(p,"Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye");
+		bTextbox(p,"Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye", false);
 	}
 	return false;
 }

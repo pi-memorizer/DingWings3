@@ -20,10 +20,30 @@ ApplicationClosingException::~ApplicationClosingException()
 
 }
 
+class TextBox : public GameState
+{
+	string msg;
+	GameState *caller;
+	int count = 0;
+	bool skippable = true;
+public:
+	TextBox(Player *p, string _msg);
+	TextBox(Player *p, string _msg, bool skippable);
+	void run();
+	void draw();
+};
+
 TextBox::TextBox(Player *p, string _msg) : GameState(p)
 {
 	msg = _msg;
 	caller = p->getState();
+}
+
+TextBox::TextBox(Player *p, string _msg, bool skippable) : GameState(p)
+{
+	msg = _msg;
+	caller = p->getState();
+	this->skippable = skippable;
 }
 
 void TextBox::run()
@@ -38,7 +58,7 @@ void TextBox::run()
 			return;
 		}
 	}
-	if (getKey(p, KEY_B) && !b)
+	if (getKey(p, KEY_B) && !b&&skippable)
 	{
 		count = 1000000;
 	}
@@ -240,9 +260,9 @@ void OptionPane::draw()
 	}
 }
 
-void bTextbox(Player *p, string s)
+void bTextbox(Player *p, string s, bool skippable)
 {
-	TextBox * text = new TextBox(p, s);
+	TextBox * text = new TextBox(p, s, skippable);
 	p->pushState(text);
 	while (text == p->getState())
 	{
@@ -251,6 +271,11 @@ void bTextbox(Player *p, string s)
 			throw ApplicationClosingException();
 		}
 	}
+}
+
+void bTextbox(Player *p, string s)
+{
+	bTextbox(p, s, true);
 }
 
 string bOptionPane(Player *p, string msg, string choices[], int numChoices)

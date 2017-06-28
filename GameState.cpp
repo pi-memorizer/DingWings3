@@ -40,7 +40,11 @@ void WorldState::draw()
 {
 	setDrawColor(0xFF, 0xFF, 0xFF, 0);
 	clearScreen();
-	World *world = worlds[p->worldID];
+	for (int i = 0; i < animations.length(); i++)
+	{
+		if (!animations[i]->isDone()) animations[i]->draw();
+	}
+	World *world = worlds[p->getWorldID()];
 	for (int i = p->x - WIDTH / TILE_SIZE / 2 - 2; i <= p->x + WIDTH / TILE_SIZE / 2 + 2; i++)
 	{
 		for (int j = p->y - HEIGHT / TILE_SIZE / 2 - 2; j <= p->y + HEIGHT / TILE_SIZE / 2 + 2; j++)
@@ -49,7 +53,7 @@ void WorldState::draw()
 			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - TILE_SIZE/2 - p->xOffset + TILE_SIZE * (i - p->x), HEIGHT / 2 - TILE_SIZE/2 - p->yOffset + TILE_SIZE * (j - p->y));
 		}
 	}
-	List<Entity*> &entities = worlds[p->worldID]->entities;
+	List<Entity*> &entities = worlds[p->getWorldID()]->entities;
 	for (int i = 0; i < entities.length(); i++)
 	{
 		Entity *e = entities[i];
@@ -101,7 +105,7 @@ void attemptMove(Player *p, int dx, int dy, int speed)
 		p->xOffset += dx;
 		p->yOffset += dy;
 		offsetShift(p);
-		if (worlds[p->worldID]->collides(p->x, p->y, p->xOffset, p->yOffset, p->width, p->height))
+		if (worlds[p->getWorldID()]->collides(p->x, p->y, p->xOffset, p->yOffset, p->width, p->height))
 		{
 			p->xOffset -= dx;
 			p->yOffset -= dy;
@@ -115,7 +119,7 @@ bool firstWithWorldId(int worldId, int playerId)
 {
 	for (int i = 0; i < numPlayers; i++)
 	{
-		if (getPlayer(i)->worldID == worldId)
+		if (getPlayer(i)->getWorldID() == worldId)
 			return i == playerId;
 	}
 	return false;
@@ -123,6 +127,17 @@ bool firstWithWorldId(int worldId, int playerId)
 
 void WorldState::run()
 {
+	for (int i = 0; i < animations.length(); i++)
+	{
+		if (animations[i]->isDone())
+		{
+			animations.removeAt(i);
+			i--;
+		}
+		else {
+			animations[i]->run();
+		}
+	}
 	startMenu();
 	if (this == p->getState())
 	{
@@ -166,28 +181,28 @@ void WorldState::run()
 			bool mapInteract = false;
 			if (p->dir == 0)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width + sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width + sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 1)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset - sight, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset - sight, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 2)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset - sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset - sight, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (p->dir == 3)
 			{
-				if (worlds[p->worldID]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height + sight, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(TILE_SIZE * p->x + p->xOffset + p->width / 2, TILE_SIZE), safeDiv(TILE_SIZE * p->y + p->yOffset + p->height + sight, TILE_SIZE)))
 					mapInteract = true;
 			}
 			if (!mapInteract)
 			{
 				//try interacting with entities
-				List<Entity*> entities = worlds[p->worldID]->entities;
+				List<Entity*> entities = worlds[p->getWorldID()]->entities;
 				int x = 0;
 				int y = 0;
 				if (p->dir == 0)
@@ -227,9 +242,9 @@ void WorldState::run()
 			}
 		}
 	}
-	if (firstWithWorldId(p->worldID, p->id))
+	if (firstWithWorldId(p->getWorldID(), p->id))
 	{
-		List<Entity*> &entities = worlds[p->worldID]->entities;
+		List<Entity*> &entities = worlds[p->getWorldID()]->entities;
 		for (int i = 0; i < entities.length(); i++)
 		{
 			if (entities[i]->isAlive)

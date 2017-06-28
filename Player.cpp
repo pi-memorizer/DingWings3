@@ -2,6 +2,7 @@
 #include "GameState.h"
 #include "Sprite.h"
 #include "Item.h"
+#include "World.h"
 #include <random>
 
 Player **players = new Player*[0];
@@ -104,6 +105,17 @@ GameState *Player::getState()
 		return states.peek();
 	else
 		return nullptr;
+}
+
+void Player::setWorldID(int id)
+{
+	worldID = id;
+	worlds[id]->enter(this);
+}
+
+int Player::getWorldID()
+{
+	return worldID;
 }
 
 void Player::pushState(GameState *state)
