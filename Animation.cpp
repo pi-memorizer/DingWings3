@@ -1,5 +1,6 @@
 #include "Animation.h"
 #include "Blocking.h"
+#include "GameState.h"
 
 Animation::Animation(Player *p) : GameState(p)
 {

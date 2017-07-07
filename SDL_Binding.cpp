@@ -23,6 +23,18 @@ Hashmap<string, Mix_Chunk*> sounds;
 Mix_Music *music;
 string song;
 Sprite ***chars;
+List<SDL_Joystick*> joysticks;
+struct PlayerMap
+{
+	bool a = false, b = false, up = false, down = false, left = false, right = false;
+	bool playing = false;
+};
+
+PlayerMap playerMap[MAX_PLAYERS];
+
+bool fullscreen = true;
+const int JOYSTICK_DEAD_ZONE = 12000;
+
 
 class File
 {
@@ -181,7 +193,7 @@ void delay(int millis)
 
 int startGame()
 {
-	if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+	if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
 	{
 		return -2;
 	}
@@ -208,12 +220,17 @@ int startGame()
 		exitGame();
 		return -1;
 	}
+	for (int i = 0; i < SDL_NumJoysticks(); i++)
+	{
+		joysticks.add(SDL_JoystickOpen(i));
+	}
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	for (int i = SDLK_a; i <= SDLK_z; i++)
 		keys.add(i, false);
 	keys.add(SDLK_F4, false);
 	keys.add(SDLK_F11, false);
 	keys.add(SDLK_ESCAPE, false);
+	playerMap[0].playing = true;
 	chars = new Sprite**[4];
 	for (int j = 0; j < 4; j++)
 	{
@@ -251,6 +268,11 @@ void exitGame()
 	for (int i = 0; i < soundList.length(); i++)
 	{
 		Mix_FreeChunk(soundList[i]);
+	}
+	for (int i = 0; i < joysticks.length(); i++)
+	{
+		SDL_JoystickClose(joysticks[i]);
+		joysticks[i] = nullptr;
 	}
 	IMG_Quit();
 	Mix_Quit();
@@ -356,19 +378,38 @@ void writeString(File * file, string v)
 
 //Key press related stuff
 
-unsigned int keySymPairs[] = {
-	SDLK_ESCAPE,KEY_ESCAPE,
-	SDLK_F11,KEY_FULLSCREEN,
-	SDLK_j,KEY_A,
-	SDLK_k,KEY_B,
-	SDLK_w,KEY_UP,
-	SDLK_a,KEY_LEFT,
-	SDLK_s,KEY_DOWN,
-	SDLK_d,KEY_RIGHT,
-	0,0
-};
-
-bool fullscreen = true;
+void switchKey(int k, bool state)
+{
+	switch (k)
+	{
+	case SDLK_w:
+	case SDLK_UP:
+		playerMap[0].up = state;
+		break;
+	case SDLK_d:
+	case SDLK_RIGHT:
+		playerMap[0].right = state;
+		break;
+	case SDLK_s:
+	case SDLK_DOWN:
+		playerMap[0].down = state;
+		break;
+	case SDLK_a:
+	case SDLK_LEFT:
+		playerMap[0].left = state;
+		break;
+	case SDLK_j:
+	case SDLK_z:
+		playerMap[0].a = state;
+		break;
+	case SDLK_k:
+	case SDLK_x:
+		playerMap[0].b = state;
+		break;
+	default:
+		break;
+	}
+}
 
 bool getEvent(Event *e)
 {
@@ -381,21 +422,9 @@ bool getEvent(Event *e)
 		}
 		else if (sdl.type==SDL_KEYDOWN&&!sdl.key.repeat)
 		{
-			e->type = EVENT_KEY_DOWN;
 			if (keys.contains(sdl.key.keysym.sym))
 			{
-				e->keys.prevState = keys[sdl.key.keysym.sym];
-				keys[sdl.key.keysym.sym] = true;
-				e->keys.key = KEY_UNKNOWN;
-				for (int i = 0; keySymPairs[i] != 0; i += 2)
-				{
-					if (keySymPairs[i] == sdl.key.keysym.sym)
-					{
-						e->keys.key = (EventKey)keySymPairs[i + 1];
-						break;
-					}
-				}
-				if (e->keys.key == KEY_FULLSCREEN && !e->keys.prevState)
+				if (sdl.key.keysym.sym == SDLK_F11&&!keys[SDLK_F11])
 				{
 					if (fullscreen)
 					{
@@ -409,36 +438,119 @@ bool getEvent(Event *e)
 					}
 					fullscreen = !fullscreen;
 				}
-				if (e->keys.key == KEY_ESCAPE)
+				else if (sdl.key.keysym.sym == SDLK_ESCAPE)
 				{
 					e->type = EVENT_QUIT;
+				} else {
+					switchKey(sdl.key.keysym.sym, true);
 				}
+				keys[sdl.key.keysym.sym] = true;
+				e->keys.key = KEY_UNKNOWN;
 			}
 			else {
 				e->keys.key = KEY_UNKNOWN;
-				e->keys.prevState = false;
 			}
 		}
 		else if (sdl.type==SDL_KEYUP&&!sdl.key.repeat)
 		{
-			e->type = EVENT_KEY_UP;
 			if (keys.contains(sdl.key.keysym.sym))
 			{
-				e->keys.prevState = keys[sdl.key.keysym.sym];
 				keys[sdl.key.keysym.sym] = false;
 				e->keys.key = KEY_UNKNOWN;
-				for (int i = 0; keySymPairs[i] != 0; i += 2)
-				{
-					if (keySymPairs[i] == sdl.key.keysym.sym)
-					{
-						e->keys.key = (EventKey)keySymPairs[i + 1];
-						break;
-					}
-				}
+				switchKey(sdl.key.keysym.sym, false);
 			}
 			else {
 				e->keys.key = KEY_UNKNOWN;
-				e->keys.prevState = false;
+			}
+		}
+		else if (sdl.type == SDL_JOYAXISMOTION)
+		{
+			if (sdl.jaxis.which < MAX_PLAYERS)
+			{
+				if (!playerMap[sdl.jaxis.which].playing)
+				{
+					addPlayer(sdl.jaxis.which);
+					playerMap[sdl.jaxis.which].playing = true;
+				}
+				if (sdl.jaxis.axis == 0)
+				{
+					if (sdl.jaxis.value < -JOYSTICK_DEAD_ZONE)
+					{
+						playerMap[sdl.jaxis.which].left = true;
+						playerMap[sdl.jaxis.which].right = false;
+					}
+					else if (sdl.jaxis.value > JOYSTICK_DEAD_ZONE)
+					{
+						playerMap[sdl.jaxis.which].right = true;
+						playerMap[sdl.jaxis.which].left = false;
+					}
+					else {
+						playerMap[sdl.jaxis.which].right = false;
+						playerMap[sdl.jaxis.which].left = false;
+					}
+				}
+				else {
+					if (sdl.jaxis.value < -JOYSTICK_DEAD_ZONE)
+					{
+						playerMap[sdl.jaxis.which].up = true;
+						playerMap[sdl.jaxis.which].down = false;
+					}
+					else if (sdl.jaxis.value > JOYSTICK_DEAD_ZONE)
+					{
+						playerMap[sdl.jaxis.which].down = true;
+						playerMap[sdl.jaxis.which].up = false;
+					}
+					else {
+						playerMap[sdl.jaxis.which].up = false;
+						playerMap[sdl.jaxis.which].down = false;
+					}
+				}
+			}
+		}
+		else if (sdl.type == SDL_JOYBUTTONDOWN)
+		{
+			if (sdl.jbutton.which < MAX_PLAYERS)
+			{
+				if (!playerMap[sdl.jaxis.which].playing)
+				{
+					addPlayer(sdl.jaxis.which);
+					playerMap[sdl.jaxis.which].playing = true;
+				}
+				if (sdl.jbutton.button % 2 == 0)
+				{
+					playerMap[sdl.jbutton.which].a = true;
+				}
+				else {
+					playerMap[sdl.jbutton.which].b = true;
+				}
+			}
+		}
+		else if (sdl.type == SDL_JOYBUTTONUP)
+		{
+			if (sdl.jbutton.which < MAX_PLAYERS)
+			{
+				if (sdl.jbutton.button % 2 == 0)
+				{
+					playerMap[sdl.jbutton.which].a = false;
+				}
+				else {
+					playerMap[sdl.jbutton.which].b = false;
+				}
+			}
+		}
+		else if (sdl.type == SDL_JOYHATMOTION)
+		{
+			if (sdl.jhat.which < MAX_PLAYERS)
+			{
+				if (!playerMap[sdl.jaxis.which].playing)
+				{
+					addPlayer(sdl.jaxis.which);
+					playerMap[sdl.jaxis.which].playing = true;
+				}
+				playerMap[sdl.jhat.which].up = sdl.jhat.value&1;
+				playerMap[sdl.jhat.which].down = sdl.jhat.value&4;
+				playerMap[sdl.jhat.which].left = sdl.jhat.value&8;
+				playerMap[sdl.jhat.which].right = sdl.jhat.value&2;
 			}
 		}
 		else {
@@ -454,19 +566,23 @@ bool getEvent(Event *e)
 
 bool getKey(Player *p, EventKey key)
 {
-	if (p->id == 0)
+	PlayerMap* m = &playerMap[p->id];
+	switch (key)
 	{
-		switch (key)
-		{
-		case KEY_FULLSCREEN: return keys[SDLK_F11];
-		case KEY_A: return keys[SDLK_j];
-		case KEY_B: return keys[SDLK_k];
-		case KEY_UP: return keys[SDLK_w];
-		case KEY_DOWN: return keys[SDLK_s];
-		case KEY_LEFT: return keys[SDLK_a];
-		case KEY_RIGHT: return keys[SDLK_d];
-		case KEY_ESCAPE: return keys[SDLK_ESCAPE];
-		}
+	case KEY_A:
+		return m->a;
+	case KEY_B:
+		return m->b;
+	case KEY_UP:
+		return m->up;
+	case KEY_DOWN:
+		return m->down;
+	case KEY_LEFT:
+		return m->left;
+	case KEY_RIGHT:
+		return m->right;
+	default:
+		break;
 	}
 	return false;
 }

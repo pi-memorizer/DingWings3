@@ -13,7 +13,7 @@ void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
 	if (x == -1 && y == 2)
 	{
-		bSelectItem(p,ITEM_FOOD);
+		p->unlockCamera();
 		return true;
 	}
 	if (x == -1 && y == 1)

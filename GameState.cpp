@@ -4,6 +4,7 @@
 #include "World.h"
 #include "Sprite.h"
 #include "Event.h"
+#include "Animation.h"
 
 GameState::GameState(Player *player)
 {
@@ -45,12 +46,12 @@ void WorldState::draw()
 		if (!animations[i]->isDone()) animations[i]->draw();
 	}
 	World *world = worlds[p->getWorldID()];
-	for (int i = p->x - WIDTH / TILE_SIZE / 2 - 2; i <= p->x + WIDTH / TILE_SIZE / 2 + 2; i++)
+	for (int i = p->getCameraCenterX() - WIDTH / TILE_SIZE / 2 - 2; i <= p->getCameraCenterX() + WIDTH / TILE_SIZE / 2 + 2; i++)
 	{
-		for (int j = p->y - HEIGHT / TILE_SIZE / 2 - 2; j <= p->y + HEIGHT / TILE_SIZE / 2 + 2; j++)
+		for (int j = p->getCameraCenterY() - HEIGHT / TILE_SIZE / 2 - 2; j <= p->getCameraCenterY() + HEIGHT / TILE_SIZE / 2 + 2; j++)
 		{
 			int index = world->getLower(i, j);
-			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - TILE_SIZE/2 - p->xOffset + TILE_SIZE * (i - p->x), HEIGHT / 2 - TILE_SIZE/2 - p->yOffset + TILE_SIZE * (j - p->y));
+			if (tileset[index] != nullptr&&index != 0) tileset[index]->draw(getOnscreenX(p, i, 0), getOnscreenY(p, j, 0));
 		}
 	}
 	List<Entity*> &entities = worlds[p->getWorldID()]->entities;
@@ -63,13 +64,16 @@ void WorldState::draw()
 			if(e->sprite!=nullptr) e->sprite->draw(getOnscreenX(p, e->x, e->xOffset), getOnscreenY(p, e->y, e->yOffset));
 		}
 	}
-	p->getSprite()->draw(getOnscreenX(p, p->x, p->xOffset), getOnscreenY(p, p->y, p->yOffset));
-	for (int i = p->x - WIDTH / TILE_SIZE / 2 - 2; i <= p->x + WIDTH / TILE_SIZE / 2 + 2; i++)
+	for (int i = 0; i < numPlayers; i++)
 	{
-		for (int j = p->y - HEIGHT / TILE_SIZE / 2 - 2; j <= p->y + HEIGHT / TILE_SIZE / 2 + 2; j++)
+		players[i]->getSprite()->draw(getOnscreenX(p, players[i]->x, players[i]->xOffset), getOnscreenY(p, players[i]->y, players[i]->yOffset));
+	}
+	for (int i = p->getCameraCenterX() - WIDTH / TILE_SIZE / 2 - 2; i <= p->getCameraCenterX() + WIDTH / TILE_SIZE / 2 + 2; i++)
+	{
+		for (int j = p->getCameraCenterY() - HEIGHT / TILE_SIZE / 2 - 2; j <= p->getCameraCenterY() + HEIGHT / TILE_SIZE / 2 + 2; j++)
 		{
 			int index = world->getUpper(i, j);
-			if (tileset[index] != nullptr&&index!=0) tileset[index]->draw(WIDTH / 2 - TILE_SIZE / 2 - p->xOffset + TILE_SIZE * (i - p->x), HEIGHT / 2 - TILE_SIZE / 2 - p->yOffset + TILE_SIZE * (j - p->y));
+			if (tileset[index] != nullptr&&index != 0) tileset[index]->draw(getOnscreenX(p, i, 0), getOnscreenY(p, j, 0));
 		}
 	}
 }

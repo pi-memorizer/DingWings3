@@ -26,6 +26,7 @@ class TextBox : public GameState
 	GameState *caller;
 	int count = 0;
 	bool skippable = true;
+	bool done = false;
 public:
 	TextBox(Player *p, string _msg);
 	TextBox(Player *p, string _msg, bool skippable);
@@ -52,7 +53,7 @@ void TextBox::run()
 	startMenu();
 	if (getKey(p,KEY_A) && !a)
 	{
-		if (count >= msg.length())
+		if (done)
 		{
 			p->popState();
 			return;
@@ -102,7 +103,7 @@ int hexChar(char c)
 	return 0;
 }
 
-void drawTextBox(string msg, int count)
+bool drawTextBox(string msg, int count)
 {
 	const int MAX_LINES = 4;
 	setDrawColor(0xFF, 0xFF, 0xFF, 0);
@@ -179,12 +180,13 @@ void drawTextBox(string msg, int count)
 		x++;
 		f += df;
 	}
+	return j >= msg.length();
 }
 
 void TextBox::draw()
 {
 	caller->draw();
-	drawTextBox(msg, count);
+	if (drawTextBox(msg, count)) done = true;
 }
 
 class OptionPane : public GameState
@@ -196,6 +198,7 @@ class OptionPane : public GameState
 	int choice = 0;
 	int count = 0;
 	GameState *caller;
+	bool done = false;
 public:
 	OptionPane(Player *p, string msg, string choices[], int numChoices, string *output);
 	virtual void run();
@@ -227,7 +230,7 @@ void OptionPane::run()
 	}
 	if (getKey(p,KEY_A) && !a)
 	{
-		if (count >= msg.length())
+		if (done)
 		{
 			*output = choices[choice];
 			p->popState();
@@ -248,7 +251,7 @@ void OptionPane::run()
 void OptionPane::draw()
 {
 	caller->draw();
-	drawTextBox(msg, count);
+	if (drawTextBox(msg, count)) done = true;
 	drawCharacter('>', 0, choice * 8, 0,0,0);
 	for (int i = 0; i < numChoices; i++)
 	{
@@ -351,6 +354,7 @@ class NumberPane : public GameState
 	int *output;
 	GameState*caller;
 	int count = 0;
+	bool done = false;
 public:
 	NumberPane(Player *p, string msg, int start, int min, int max, int*output);
 	virtual void run();
@@ -370,7 +374,7 @@ NumberPane::NumberPane(Player *p, string msg, int start, int min, int max, int *
 void NumberPane::draw()
 {
 	caller->draw();
-	drawTextBox(msg, count);
+	if (drawTextBox(msg, count)) done = true;
 	string num = to_string(choice);
 	for (int i = 0; i < num.length(); i++)
 	{
@@ -384,7 +388,7 @@ void NumberPane::run()
 	startMenu();
 	if (getKey(p,KEY_A) && !a)
 	{
-		if (count >= msg.length())
+		if (done)
 		{
 			*output = choice;
 			p->popState();
@@ -453,7 +457,7 @@ int bNumberPane(Player *p, string msg, int start, int min, int max)
 
 class InventoryDialogue : public GameState
 {
-	static int pointerX, pointerY;
+	int pointerX, pointerY;
 	static int positionPairs[];
 	static Sprite *inventoryUI, *inventoryPointer, *inventoryBadSpot;
 	Item **output;
@@ -464,9 +468,6 @@ public:
 	virtual void run();
 	virtual void draw();
 };
-
-int InventoryDialogue::pointerX = 0;
-int InventoryDialogue::pointerY = 0;
 
 Sprite *InventoryDialogue::inventoryUI = nullptr;
 Sprite *InventoryDialogue::inventoryPointer = nullptr;

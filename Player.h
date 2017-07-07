@@ -17,7 +17,11 @@ class Player
 {
 	Stack<GameState*> states;
 	int worldID;
+	bool cameraLocked = true;
 public:
+	friend int getOnscreenX(Player *p, int x, int xOffset);
+	friend int getOnscreenY(Player *p, int y, int yOffset);
+	int cameraX, cameraY, cameraXOffset, cameraYOffset;
 	ItemNumberPair inventory[INVENTORY_SLOTS];
 	int width, height;
 	int dir = 3; int wait = 0;
@@ -39,8 +43,13 @@ public:
 	int itemCount(Item *item);
 	int getWorldID();
 	void setWorldID(int id);
+	void lockCamera();
+	void unlockCamera();
+	int getCameraCenterX();
+	int getCameraCenterY();
 };
 
+const int MAX_PLAYERS = 4;
 Player* getPlayer(int id);
 void addPlayer(int id);
 void removePlayer(int id);

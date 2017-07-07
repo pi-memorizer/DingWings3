@@ -2,7 +2,8 @@
 #define GAMESTATE_H
 
 #include "Revengine.h"
-#include "Animation.h"
+
+class Animation;
 
 class GameState
 {

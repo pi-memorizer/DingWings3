@@ -237,3 +237,39 @@ int Player::itemCount(Item *item)
 	}
 	return count;
 }
+
+void Player::lockCamera()
+{
+	cameraLocked = true;
+}
+
+void Player::unlockCamera()
+{
+	cameraLocked = false;
+	cameraX = x;
+	cameraY = y;
+	cameraXOffset = xOffset;
+	cameraYOffset = yOffset;
+}
+
+int Player::getCameraCenterX()
+{
+	if (cameraLocked)
+	{
+		return x;
+	}
+	else {
+		return cameraX;
+	}
+}
+
+int Player::getCameraCenterY()
+{
+	if (cameraLocked)
+	{
+		return y;
+	}
+	else {
+		return cameraY;
+	}
+}

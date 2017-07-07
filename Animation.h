@@ -1,8 +1,8 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "GameState.h"
 #include "Player.h"
+#include "GameState.h"
 
 class Animation : public GameState
 {
