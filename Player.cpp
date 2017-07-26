@@ -97,6 +97,11 @@ Player::Player(int id)
 	}
 }
 
+Player::~Player()
+{
+	destroyTexture(texture);
+}
+
 GameState *Player::getState()
 {
 	if (states.length() > 0)

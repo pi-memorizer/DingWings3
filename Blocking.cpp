@@ -4,6 +4,7 @@
 #include "Sprite.h"
 #include "Item.h"
 #include "Event.h"
+#include "Animation.h"
 #include <cmath>
 
 
@@ -733,5 +734,21 @@ Item* Script::selectItem(unsigned long long categories)
 	}
 	else {
 		return states[currentState++].item;
+	}
+}
+
+void Script::blockingAnimation(Animation *animation)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return());
+		p->pushState(animation);
+		assert(this != p->getState());
+		currentState++;
+		throw 0;
+	}
+	else {
+		delete animation;
+		currentState++;
 	}
 }

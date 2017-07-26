@@ -5,13 +5,16 @@
 #include <string>
 using namespace std;
 
-void save();
-void load();
+//Holds all file IO stuff
 
-class File;
-File * openFile(string s, bool writing);
-void closeFile(File *file);
+void save(); //save the game
+void load(); //loads the game from a save file
 
+class File; //hardware defined File class
+File * openFile(string s, bool writing); //opens a file with a specified filename and whether it is reading or writing
+void closeFile(File *file); //closes a file
+
+//lots of functions to read and write specific data types
 unsigned char readByte(File*file);
 unsigned short readUShort(File * file);
 unsigned int readUInt(File * file);

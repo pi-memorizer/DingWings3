@@ -3,6 +3,12 @@
 #include <string>
 using namespace std;
 
+//This file holds implementations for generic Stacks, Lists, and Hashmaps
+//Pretty self explanatory
+
+//If a non-string or integer type is used for the key in a Hashmap,
+//it needs to inherit from the Hashable class
+
 template<class T> class Stack {
 	int top;
 	T *stack = nullptr;
