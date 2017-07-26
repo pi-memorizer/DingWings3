@@ -10,8 +10,6 @@ void loadPlayer(File * file, Player *p)
 	p->setWorldID(readShort(file));
 	p->x = readInt(file);
 	p->y = readInt(file);
-	p->xOffset = readChar(file);
-	p->yOffset = readChar(file);
 }
 
 void savePlayer(File *file, Player *p)
@@ -20,8 +18,6 @@ void savePlayer(File *file, Player *p)
 	writeShort(file, (short)p->getWorldID());
 	writeInt(file, p->x);
 	writeInt(file, p->y);
-	writeChar(file, (char)p->xOffset);
-	writeChar(file, (char)p->yOffset);
 }
 
 void save()

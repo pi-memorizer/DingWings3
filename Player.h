@@ -19,14 +19,14 @@ class Player
 	int worldID;
 	bool cameraLocked = true;
 public:
-	friend int getOnscreenX(Player *p, int x, int xOffset);
-	friend int getOnscreenY(Player *p, int y, int yOffset);
-	int cameraX, cameraY, cameraXOffset, cameraYOffset;
+	friend int getOnscreenX(Player *p, int x);
+	friend int getOnscreenY(Player *p, int y);
+	int cameraX, cameraY;
 	ItemNumberPair inventory[INVENTORY_SLOTS];
 	int width, height;
 	int dir = 3; int wait = 0;
 	Texture *texture;
-	int x, y, xOffset, yOffset;
+	int x, y;
 	int id;
 	Player(int id);
 	GameState *getState();

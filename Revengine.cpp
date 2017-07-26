@@ -142,25 +142,25 @@ bool theLoop()
 	return true;
 }
 
-int getOnscreenX(Player *p, int x, int xOffset)
+int getOnscreenX(Player *p, int x)
 {
 	if (p->cameraLocked)
 	{
-		return WIDTH / 2 - TILE_SIZE / 2 - p->xOffset + xOffset + TILE_SIZE * (x - p->x);
+		return WIDTH / 2 - TILE_SIZE / 2 + (x - p->x);
 	}
 	else {
-		return WIDTH / 2 - TILE_SIZE / 2 - p->cameraXOffset + xOffset + TILE_SIZE * (x - p->cameraX);
+		return WIDTH / 2 - TILE_SIZE / 2 + (x - p->cameraX);
 	}
 }
 
-int getOnscreenY(Player *p, int y, int yOffset)
+int getOnscreenY(Player *p, int y)
 {
 	if (p->cameraLocked)
 	{
-		return HEIGHT / 2 - TILE_SIZE / 2 - p->yOffset + yOffset + TILE_SIZE * (y - p->y);
+		return HEIGHT / 2 - TILE_SIZE / 2 + (y - p->y);
 	}
 	else {
-		return HEIGHT / 2 - TILE_SIZE / 2 - p->cameraYOffset + yOffset + TILE_SIZE * (y - p->cameraY);
+		return HEIGHT / 2 - TILE_SIZE / 2 + (y - p->cameraY);
 	}
 }
 

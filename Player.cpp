@@ -83,10 +83,8 @@ void removePlayer(int id)
 Player::Player(int id)
 {
 	this->id = id;
-	x = -2;
-	y = -2;
-	xOffset = 0;
-	yOffset = 0;
+	x = -64;
+	y = -64;
 	worldID = 0;
 	width = 16;
 	height = 16;
@@ -248,8 +246,6 @@ void Player::unlockCamera()
 	cameraLocked = false;
 	cameraX = x;
 	cameraY = y;
-	cameraXOffset = xOffset;
-	cameraYOffset = yOffset;
 }
 
 int Player::getCameraCenterX()

@@ -8,7 +8,7 @@ class Entity
 	bool(*_interact)(Player *p);
 public:
 	bool isAlive = true;
-	int x, y, xOffset, yOffset, width, height;
+	int x, y, width, height;
 	Entity(World *world, int x, int y, int width, int height, Sprite *sprite, void(*_run)(), bool(*_interact)(Player *p));
 	virtual void run();
 	virtual bool interact(Player *p);

@@ -66,10 +66,10 @@ bool StaticWorld::interact(Player *p, int x, int y)
 
 bool rectCollides(int x1, int y1, int width1, int height1, int x2, int y2, int width2, int height2)
 {
-	if (y1 + height1 <= y2) return false;
-	if (y1 >= y2 + height2) return false;
-	if (x1 + width1 <= x2) return false;
-	if (x1 >= x2 + width2) return false;
+	if (y1 + height1 < y2) return false;
+	if (y1 > y2 + height2) return false;
+	if (x1 + width1 < x2) return false;
+	if (x1 > x2 + width2) return false;
 	return true;
 }
 
@@ -91,12 +91,12 @@ bool StaticWorld::subCollision(int x, int y, int px, int py, int pwidth, int phe
 	return false;
 }
 
-bool StaticWorld::collides(int x, int y, int xOffset, int yOffset, int width, int height)
+bool StaticWorld::collides(int x, int y, int width, int height)
 {
 	assert(width > 0);
 	assert(height > 0);
-	int _x = x * TILE_SIZE + xOffset;
-	int _y = y * TILE_SIZE + yOffset;
+	int _x = x + xOffset;
+	int _y = y + yOffset;
 	for (int cx = safeDiv(_x, TILE_SIZE); cx <= safeDiv(_x + width, TILE_SIZE); cx++)
 	{
 		for (int cy = safeDiv(_y, TILE_SIZE); cy <= safeDiv(_y + height, TILE_SIZE); cy++)

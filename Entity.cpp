@@ -7,8 +7,6 @@ Entity::Entity(World *w, int _x, int _y, int _width, int _height, Sprite *s, voi
 	world = w;
 	x = _x;
 	y = _y;
-	xOffset = 0;
-	yOffset = 0;
 	width = _width;
 	height = _height;
 	sprite = s;

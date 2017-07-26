@@ -11,7 +11,7 @@ public:
 	void virtual run() = 0;
 	void virtual enter(Player *p) = 0;
 	bool virtual interact(Player *p, int x, int y) = 0;
-	bool virtual collides(int x, int y, int xOffset, int yOffset, int width, int height) = 0;
+	bool virtual collides(int x, int y, int width, int height) = 0;
 	int virtual getLower(int x, int y) = 0;
 	int virtual getUpper(int x, int y) = 0;
 	int virtual getEffect(int x, int y) = 0;
@@ -49,7 +49,7 @@ public:
 	void run();
 	void enter(Player *p);
 	bool interact(Player *p, int x, int y);
-	bool virtual collides(int x, int y, int xOffset, int yOffset, int width, int height);
+	bool virtual collides(int x, int y, int width, int height);
 	int virtual getLower(int x, int y);
 	int virtual getUpper(int x, int y);
 	int virtual getEffect(int x, int y);
