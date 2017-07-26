@@ -186,9 +186,14 @@ void fillRect(Rect *rect)
 	SDL_RenderFillRect(renderer, &r);
 }
 
+int ticks = SDL_GetTicks();
+
 void delay(int millis)
 {
-	SDL_Delay(millis);
+	int ticks_ = SDL_GetTicks();
+	if(ticks_-ticks<millis)
+		SDL_Delay(millis-(ticks_-ticks));
+	ticks = ticks_;
 }
 
 int startGame()
@@ -429,7 +434,11 @@ bool getEvent(Event *e)
 					if (fullscreen)
 					{
 						setWindowFullscreen(false);
-						setWindowSize(2 * WIDTH, 2 * HEIGHT);
+						int scaleX = getScreenWidth() / WIDTH;
+						int scaleY = getScreenHeight() / HEIGHT;
+						int scalar = scaleX;
+						if (scaleY < scaleX) scalar = scaleY;
+						setWindowSize(scalar * WIDTH, scalar * HEIGHT);
 						centerWindow();
 					}
 					else {

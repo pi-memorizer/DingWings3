@@ -66,7 +66,7 @@ void WorldState::draw()
 	}
 	for (int i = 0; i < numPlayers; i++)
 	{
-		players[i]->getSprite()->draw(getOnscreenX(p, players[i]->x, players[i]->xOffset), getOnscreenY(p, players[i]->y, players[i]->yOffset));
+		if(p->getWorldID()==players[i]->getWorldID()) players[i]->getSprite()->draw(getOnscreenX(p, players[i]->x, players[i]->xOffset), getOnscreenY(p, players[i]->y, players[i]->yOffset));
 	}
 	for (int i = p->getCameraCenterX() - WIDTH / TILE_SIZE / 2 - 2; i <= p->getCameraCenterX() + WIDTH / TILE_SIZE / 2 + 2; i++)
 	{

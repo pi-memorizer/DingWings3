@@ -9,11 +9,24 @@
 #include "SoundSystem.h"
 #include "GameState.h"
 
+void testScript(Player*p, int x, int y, Script *s)
+{
+	s->textBox("Hello there", true);
+	s->textBox("I'm a test", true);
+	if (s->optionPane("Do you like me?", "Yes", "No") == "Yes")
+	{
+		s->textBox("Yay!", true);
+	}
+	else {
+		s->textBox("You suck!", true);
+	}
+}
+
 void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
 	if (x == -1 && y == 2)
 	{
-		p->unlockCamera();
+		Script::start(p, x, y, &testScript);
 		return true;
 	}
 	if (x == -1 && y == 1)

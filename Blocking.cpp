@@ -233,6 +233,7 @@ void OptionPane::run()
 		if (done)
 		{
 			*output = choices[choice];
+			delete[] choices;
 			p->popState();
 			return;
 		}
@@ -298,49 +299,49 @@ string bOptionPane(Player *p, string msg, string choices[], int numChoices)
 
 string bOptionPane(Player *p,string msg, string choice1, string choice2)
 {
-	string choices[] = {
+	string *choices = new string[2]{
 		choice1, choice2
 	};
 	return bOptionPane(p,msg, choices, 2);
 }
 string bOptionPane(Player *p, string msg, string choice1, string choice2, string choice3)
 {
-	string choices[] = {
+	string *choices = new string[3]{
 		choice1, choice2, choice3
 	};
 	return bOptionPane(p,msg, choices, 3);
 }
 string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4)
 {
-	string choices[] = {
+	string *choices = new string[4]{
 		choice1, choice2, choice3, choice4
 	};
 	return bOptionPane(p,msg, choices, 4);
 }
 string bOptionPane(Player *p, string msg, string choice1, string choice2, string choice3, string choice4, string choice5)
 {
-	string choices[] = {
+	string *choices = new string[5]{
 		choice1, choice2, choice3, choice4, choice5
 	};
 	return bOptionPane(p,msg, choices, 5);
 }
 string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6)
 {
-	string choices[] = {
+	string *choices = new string[6]{
 		choice1, choice2, choice3, choice4, choice5, choice6
 	};
 	return bOptionPane(p,msg, choices, 6);
 }
 string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7)
 {
-	string choices[] = {
+	string *choices = new string[7]{
 		choice1, choice2, choice3, choice4, choice5, choice6, choice7
 	};
 	return bOptionPane(p,msg, choices, 7);
 }
 string bOptionPane(Player *p,string msg, string choice1, string choice2, string choice3, string choice4, string choice5, string choice6, string choice7, string choice8)
 {
-	string choices[] = {
+	string *choices = new string[8]{
 		choice1, choice2, choice3, choice4, choice5, choice6, choice7, choice8
 	};
 	return bOptionPane(p,msg, choices, 8);
@@ -618,4 +619,84 @@ Item* bSelectItem(Player *p, unsigned long long categories)
 		}
 	}
 	return output;
+}
+
+Script::Script(Player *p,GameState*caller) : GameState(p)
+{
+	this->caller = caller;
+}
+
+void Script::start(Player *p, int x, int y, void(*script)(Player*,int,int,Script*))
+{
+	Script *s = new Script(p,p->getState());
+	s->x = x;
+	s->y = y;
+	p->pushState(s);
+	s->_script = script;
+}
+
+void Script::run()
+{
+	caller->run();
+	if (this != p->getState()) return;
+	currentState = 0;
+	try {
+		_script(p,x,y,this);
+		p->popState();
+	} catch(int a) { }
+}
+
+void Script::draw()
+{
+	caller->draw();
+}
+
+Script::Return::Return()
+{
+}
+Script::Return::Return(string s)
+{
+	this->s = s;
+}
+Script::Return::Return(int i)
+{
+	this->i = i;
+}
+Script::Return::Return(Item* item)
+{
+	this->item = item;
+}
+
+void Script::textBox(string s, bool skippable)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return());
+		TextBox *t = new TextBox(p, s, skippable);
+		p->pushState(t);
+		assert(this != p->getState());
+		currentState++;
+		throw 0;
+	}
+	else {
+		currentState++;
+	}
+}
+
+string Script::optionPane(string msg, string choice1, string choice2)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return(""));
+		string *s = new string[2] {
+			choice1, choice2
+		};
+		OptionPane *o = new OptionPane(p, msg, s, 2, &states[states.length() - 1].s);
+		p->pushState(o);
+		currentState++;
+		throw 0;
+	}
+	else {
+		return states[currentState++].s;
+	}
 }

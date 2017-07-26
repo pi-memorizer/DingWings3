@@ -1,6 +1,37 @@
 #ifndef BLOCKING_H
 #define BLOCKING_H
 #include "Revengine.h"
+#include "GameState.h"
+
+class Script : public GameState
+{
+public:
+	struct Return{
+		Return(string s);
+		Return(int i);
+		Return(Item* item);
+		Return();
+		/*Return(const Return&);
+		~Return();
+		Return &operator=(const Return&);*/
+		string s = "";
+		int i = 0;
+		Item* item = nullptr;
+	};
+private:
+	Script(Player *p,GameState*caller);
+	List <Return> states;
+	GameState*caller;
+	int currentState = 0;
+	void(*_script)(Player*,int x, int y,Script*);
+	int x, y;
+public:
+	static void start(Player *p, int x, int y, void(*script)(Player*,int,int,Script*));
+	void run();
+	void draw();
+	void textBox(string s, bool skippable);
+	string optionPane(string msg, string choice1, string choice2);
+};
 
 void bTextbox(Player *p, string s);
 void bTextbox(Player *p, string s, bool skippable);
