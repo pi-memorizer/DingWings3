@@ -700,3 +700,38 @@ string Script::optionPane(string msg, string choice1, string choice2)
 		return states[currentState++].s;
 	}
 }
+
+int Script::numberPane(string msg, int start, int min, int max)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return(0));
+		NumberPane *n = new NumberPane(p, msg, start, min, max, &states[states.length() - 1].i);
+		p->pushState(n);
+		currentState++;
+		throw 0;
+	}
+	else {
+		return states[currentState++].i;
+	}
+}
+
+Item* Script::selectItem()
+{
+	return selectItem(~(unsigned long long)0);
+}
+
+Item* Script::selectItem(unsigned long long categories)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return(nullptr));
+		InventoryDialogue *i = new InventoryDialogue(p, categories, &states[states.length() - 1].item);
+		p->pushState(i);
+		currentState++;
+		throw 0;
+	}
+	else {
+		return states[currentState++].item;
+	}
+}

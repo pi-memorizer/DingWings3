@@ -31,6 +31,9 @@ public:
 	void draw();
 	void textBox(string s, bool skippable);
 	string optionPane(string msg, string choice1, string choice2);
+	int numberPane(string msg, int start, int min, int max);
+	Item* selectItem();
+	Item* selectItem(unsigned long long categories);
 };
 
 void bTextbox(Player *p, string s);
