@@ -2,6 +2,7 @@
 #define PLAYER_H
 #include "Revengine.h"
 #include "Graphics.h"
+#include "Entity.h"
 
 //Anything dealing with individual players is here
 
@@ -16,7 +17,7 @@ struct ItemNumberPair //holds items with their quantities, for use mainly in inv
 };
 
 //class that holds a player object
-class Player
+class Player : public Entity
 {
 	Stack<GameState*> states;
 	int worldID;
@@ -26,11 +27,9 @@ public:
 	friend int getOnscreenY(Player *p, int y); //allowed to access private data 
 	int cameraX, cameraY; //the position of the camera (if not locked to player)
 	ItemNumberPair inventory[INVENTORY_SLOTS]; //the player's inventory
-	int width, height; //the dimensions of the player as far as collision is concerned
 	//directions are 0 to the right, 1 upwards, 2 to the left, 3 downwards
 	int dir = 3; int wait = 0; //the direction the player is facing and how many frames they have to wait before moving
 	Texture *texture; //the players texture
-	int x, y; //the player's coordinates
 	int id; //the players id (different from index within **players
 	Player(int id);
 	~Player();
@@ -39,8 +38,8 @@ public:
 	void popState(); //removes and cleans up a state from the stack
 	void setState(GameState *state); //clears the stack and places this new state on top
 	Sprite *getSprite(); //gets the current sprite for the player, animation dependent
-	void draw();
-	void run();
+	virtual void draw();
+	virtual void run();
 	bool hasItem(Item *item); //checks to see if the player has an item in their inventory
 	bool hasItem(unsigned long long flag); //checks to see if the player has a category of item
 	ItemNumberPair* getItem(Item *item); //gets a random stack of items of a given type from the inventory

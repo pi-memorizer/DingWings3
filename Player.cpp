@@ -80,7 +80,7 @@ void removePlayer(int id)
 	}
 }
 
-Player::Player(int id)
+Player::Player(int id) : Entity(nullptr,-0,0)
 {
 	this->id = id;
 	x = -64;

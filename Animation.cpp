@@ -33,7 +33,6 @@ FadeAnimation::FadeAnimation(Player *p, int r, int g, int b, int length, bool fa
 	this->fadeIn = fadeIn;
 	this->length = length;
 	caller = p->getState();
-	blendMode = BLENDMODE_BLEND;
 }
 
 FadeAnimation::FadeAnimation(Player *p, int r, int g, int b, int length, bool fadeIn, int blendMode) : FadeAnimation(p, r, g, b, length, fadeIn)
@@ -57,7 +56,7 @@ void FadeAnimation::draw()
 	rect.y = 0;
 	rect.w = WIDTH;
 	rect.h = HEIGHT;
-	fillRect(&rect, blendMode);
+	fillRect(&rect);
 }
 void FadeAnimation::run()
 {

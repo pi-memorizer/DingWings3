@@ -1,7 +1,14 @@
+#define REVENGINE_GL
+
 #ifndef UNIX
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include "SDL_image.h"
+#ifdef REVENGINE_GL
+#include <glew.h>
+#include <SDL_opengl.h>
+#include <gl/glu.h>
+#endif
 #else
 #include "SDL/SDL.H"
 #include "SDL/SDL_mixer.h"
@@ -16,7 +23,11 @@
 #include "Blocking.h"
 
 SDL_Window *window;
+#ifndef REVENGINE_GL
 SDL_Renderer *renderer;
+#else
+SDL_GLContext glContext;
+#endif
 Hashmap<int, bool> keys;
 SDL_DisplayMode displayMode;
 Hashmap<string, Mix_Chunk*> sounds;
@@ -32,7 +43,7 @@ struct PlayerMap
 
 PlayerMap playerMap[MAX_PLAYERS];
 
-bool fullscreen = true;
+bool fullscreen = false;
 const int JOYSTICK_DEAD_ZONE = 12000;
 
 
@@ -45,39 +56,13 @@ public:
 class Texture
 {
 public:
+#ifndef REVENGINE_GL
 	SDL_Texture *texture;
+#else
+	GLuint texture;
+	int width, height;
+#endif
 };
-
-void setDrawColor(int r, int g, int b, int a)
-{
-	SDL_SetRenderDrawColor(renderer, r, g, b, a);
-}
-
-void clearScreen()
-{
-	SDL_RenderClear(renderer);
-}
-
-void getWindowSize(int *w, int *h)
-{
-	SDL_GetWindowSize(window, w, h);
-}
-
-void display()
-{
-	SDL_RenderPresent(renderer);
-}
-
-void startDrawingPlayer(int index)
-{
-	if (index == -1)
-	{
-		SDL_SetRenderTarget(renderer, nullptr);
-	}
-	else {
-		SDL_SetRenderTarget(renderer, players[index]->texture->texture);
-	}
-}
 
 void setWindowFullscreen(bool b)
 {
@@ -102,6 +87,38 @@ int getScreenWidth()
 int getScreenHeight()
 {
 	return displayMode.h;
+}
+
+void getWindowSize(int *w, int *h)
+{
+	SDL_GetWindowSize(window, w, h);
+}
+
+#ifndef REVENGINE_GL
+void setDrawColor(int r, int g, int b, int a)
+{
+	SDL_SetRenderDrawColor(renderer, r, g, b, a);
+}
+
+void clearScreen()
+{
+	SDL_RenderClear(renderer);
+}
+
+void display()
+{
+	SDL_RenderPresent(renderer);
+}
+
+void startDrawingPlayer(int index)
+{
+	if (index == -1)
+	{
+		SDL_SetRenderTarget(renderer, nullptr);
+	}
+	else {
+		SDL_SetRenderTarget(renderer, players[index]->texture->texture);
+	}
 }
 
 void drawTexture(Texture *texture, Rect *rect)
@@ -204,15 +221,616 @@ void fillRect(Rect *rect, int blendMode)
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 }
 
+#else
+
+std::string vertexShader = std::string() +
+"#version 330 core\n" +
+"layout(location=0) in vec3 vertexPosition_modelspace;" +
+"layout(location=1) in vec2 vertexUV;" +
+"out vec2 UV;" +
+"uniform mat4 MVP;" +
+"void main(){" +
+"gl_Position = MVP*vec4(vertexPosition_modelspace,1);" +
+"UV = vertexUV;" +
+"}";
+
+std::string fragmentShader = std::string() +
+"#version 330 core\n" +
+"layout(location = 0) out vec4 color;" +
+"in vec2 UV;" +
+"uniform sampler2D sprite;" +
+"void main(){" +
+"color = texture(sprite,UV);" +
+"}";
+
+std::string fragmentShader2 = std::string() +
+"#version 330 core\n" +
+"layout(location = 0) out vec4 color;" +
+"in vec2 UV;" +
+"uniform sampler2D sprite;" +
+"void main(){" +
+"vec4 t = texture(sprite,UV);" + 
+"color = vec4(1.0-t.x, t.y, 1.0-t.z, t.w);" +
+"}";
+
+std::string textShader = std::string() +
+"#version 330 core\n" +
+"layout(location=0) out vec4 color;" +
+"in vec2 UV;" +
+"uniform sampler2D sprite;" +
+"uniform vec4 tcolor;" +
+"void main(){" +
+"vec4 t = texture(sprite,UV);" +
+"if(t.w>.5){" + 
+"color = tcolor;" +
+"} else {" +
+"color = t;" +
+"}" +
+"}";
+
+std::string matteVertex = std::string() +
+"#version 330 core\n" +
+"layout(location=0) in vec3 vertexPosition_modelspace;" +
+"uniform mat4 MVP;" +
+"void main(){" +
+"gl_Position = MVP*vec4(vertexPosition_modelspace,1);" +
+"}";
+
+std::string matteFragment = std::string() +
+"#version 330 core\n" +
+"layout(location=0) out vec4 color;" +
+"uniform vec4 tcolor;"+
+"void main(){" +
+"color = tcolor;" +
+"}";
+
+void translateMatrix(GLfloat*matrix, GLfloat x, GLfloat y, GLfloat z);
+void scaleMatrix(GLfloat*matrix, GLfloat x, GLfloat y, GLfloat z);
+
+GLuint pixelProgram, pixelProgram2;
+GLuint textProgram;
+GLuint pixelTextureUniform;
+GLuint pixelVertexBuffer, pixelUVBuffer;
+GLfloat * matrix;
+GLuint matrixID;
+
+GLuint matteProgram;
+
+int paddingX = 0;
+
+static const GLfloat gVertexBufferData[] = {
+	0.0f, 1.0F, 0.0F,
+	0.0F, 0.0F, 0.0F,
+	1.0F, 0.0F, 0.0F,
+	0.0F,1.0F,0.0F,
+	1.0F,0.0F,0.0F,
+	1.0F,1.0F,0.0F
+};
+
+static const GLfloat matteVertexBufferData[] = {
+	0.0f, 240.0F, 0.0F,
+	0.0F, 0.0F, 0.0F,
+	320.0F, 0.0F, 0.0F,
+	0.0F,240.0F,0.0F,
+	320.0F,0.0F,0.0F,
+	320.0F,240.0F,0.0F
+};
+
+static GLfloat interVertexBufferData[] = {
+	0.0f, 1.0F, 0.0F,
+	0.0F, 0.0F, 0.0F,
+	1.0F, 0.0F, 0.0F,
+	0.0F,1.0F,0.0F,
+	1.0F,0.0F,0.0F,
+	1.0F,1.0F,0.0F
+};
+
+static const GLfloat gUVBufferData[] =
+{
+	0.0F, 1.0F,
+	0.0F, 0.0F,
+	1.0F, 0.0F,
+	0.0F, 1.0F,
+	1.0F,0.0F,
+	1.0F,1.0F
+};
+
+static GLfloat interUVBufferData[] =
+{
+	0.0F, 0.0F,
+	0.0F, 1.0F,
+	1.0F, 1.0F,
+	0.0F, 0.0F,
+	1.0F,1.0F,
+	1.0F,0.0F
+};
+
+void translateMatrix(GLfloat*matrix, GLfloat x, GLfloat y, GLfloat z)
+{
+	matrix[12] += x;
+	matrix[13] += y;
+	matrix[14] += z;
+}
+
+void scaleMatrix(GLfloat*matrix, GLfloat x, GLfloat y, GLfloat z)
+{
+	matrix[0] *= x;
+	matrix[5] *= y;
+	matrix[10] *= z;
+}
+
+GLuint lastShader;
+
+void changeShader(GLuint shader)
+{
+	if (shader != lastShader)
+	{
+		glUseProgram(shader);
+		pixelTextureUniform = glGetUniformLocation(shader, "sprite");
+		matrixID = glGetUniformLocation(shader, "MVP");
+		lastShader = shader;
+		glUniformMatrix4fv(matrixID, 1, GL_FALSE, matrix);
+	}
+}
+
+GLuint loadShaders(std::string vertex, std::string fragment)
+{
+	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+	char const * vertexSourcePointer = vertex.c_str();
+	char const * fragmentSourcePointer = fragment.c_str();
+
+	glShaderSource(vertexShaderID, 1, &vertexSourcePointer, nullptr);
+	glCompileShader(vertexShaderID);
+
+	glShaderSource(fragmentShaderID, 1, &fragmentSourcePointer, nullptr);
+	glCompileShader(fragmentShaderID);
+
+	int infoLength;
+	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &infoLength);
+	if (infoLength > 0) {
+		char *FragmentShaderErrorMessage = new char[infoLength + 1];
+		glGetShaderInfoLog(fragmentShaderID, infoLength, NULL,FragmentShaderErrorMessage);
+		debug(FragmentShaderErrorMessage);
+		delete[] FragmentShaderErrorMessage;
+	}
+
+	GLuint program = glCreateProgram();
+	glAttachShader(program, vertexShaderID);
+	glAttachShader(program, fragmentShaderID);
+	glLinkProgram(program);
+
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
+	if (infoLength > 0) {
+		char *FragmentShaderErrorMessage = new char[infoLength + 1];
+		glGetProgramInfoLog(program, infoLength, NULL, FragmentShaderErrorMessage);
+		debug(FragmentShaderErrorMessage);
+		delete[]FragmentShaderErrorMessage;
+	}
+
+	glDetachShader(program, vertexShaderID);
+	glDetachShader(program, fragmentShaderID);
+
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
+	return program;
+}
+
+GLuint loadShaders(std::string fragment)
+{
+	return loadShaders(vertexShader, fragment);
+}
+
+float drawR, drawG, drawB, drawA;
+
+void setDrawColor(int r, int g, int b, int a)
+{
+	drawR = r / 255.0;
+	drawG = g / 255.0;
+	drawB = b / 255.0;
+	drawA = a / 255.0;
+	glClearColor(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+}
+
+void clearScreen()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void display()
+{
+	SDL_GL_SwapWindow(window);
+}
+
+GLuint frameBuffer;
+
+void resetMatrix()
+{
+	for (int x = 0; x < 4; x++)
+	{
+		for (int y = 0; y < 4; y++)
+		{
+			if (x == y) matrix[x + 4 * y] = 1.0F;
+			else
+				matrix[x + 4 * y] = 0.0F;
+		}
+	}
+}
+
+void startDrawingPlayer(int index)
+{
+	bool doWidescreen = false;
+	if (numPlayers == 1)
+	{
+		int width, height;
+		if (fullscreen)
+		{
+			width = displayMode.w;
+			height = displayMode.h;
+		}
+		else {
+			getWindowSize(&width, &height);
+		}
+		if (width >= 3* height/2)
+		{
+			doWidescreen = true;
+		}
+	}
+	if (doWidescreen)
+	{
+		if (index == -1)
+		{
+			paddingX = 0;
+			int width, height;
+			if (fullscreen)
+			{
+				width = displayMode.w;
+				height = displayMode.h;
+			}
+			else {
+				getWindowSize(&width, &height);
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glViewport(0,0,width, height);
+			resetMatrix();
+			scaleMatrix(matrix, 1.0, -1.0, 1.0);
+			lastShader = pixelProgram - 1;
+			changeShader(pixelProgram);
+
+			Rect r;
+			r.x = -1;
+			r.y = -1;
+			r.w = 2;
+			r.h = 2;
+			drawTexture(players[0]->texture, &r);
+			setDrawColor(0, 0, 0, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, players[0]->texture->texture, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		else {
+			float width,height;
+			if (fullscreen)
+			{
+				width = displayMode.w;
+				height = displayMode.h;
+			}
+			else {
+				int w, h;
+				getWindowSize(&w, &h);
+				width = w;
+				height = h;
+			}
+			float width2 = width/(height/(float)HEIGHT);
+			int iWidth = (int)(width2 + .5);
+			Texture *t = players[0]->texture;
+			if (t->width != iWidth)
+			{
+				glDeleteTextures(1, &t->texture);
+				delete t;
+				players[0]->texture = createTexture(iWidth, HEIGHT);
+				t = players[0]->texture;
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, players[0]->texture->texture, 0);
+
+			glViewport(0, 0, players[0]->texture->width, players[0]->texture->height);
+			paddingX = (int)((width2 - (float)WIDTH) / 2.0 + .5);
+			resetMatrix();
+			translateMatrix(matrix, -1.0F, -1.0F, -1.0F);
+			scaleMatrix(matrix, 2 /  width2, 2 / (float)HEIGHT, 1.0F);
+			lastShader = pixelProgram - 1;
+			changeShader(pixelProgram);
+		}
+	}
+	else {
+		paddingX = 0;
+		if (index == -1)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			if (fullscreen)
+			{
+				glViewport(0, 0, displayMode.w, displayMode.h);
+				resetMatrix();
+				translateMatrix(matrix, -1.0F, 1.0F, -1.0F);
+				scaleMatrix(matrix, 2.0F / displayMode.w, -2.0F / displayMode.h, 1.0F);
+			}
+			else {
+				int w, h;
+				getWindowSize(&w, &h);
+				glViewport(0, 0, w, h);
+				resetMatrix();
+				translateMatrix(matrix, -1.0F, 1.0F, -1.0F);
+				scaleMatrix(matrix, 2.0 / w, -2.0F / h, 1.0F);
+			}
+			lastShader = pixelProgram - 1;
+			changeShader(pixelProgram);
+		}
+		else {
+			Texture *t = players[index]->texture;
+			if (t->width != WIDTH || t->height != HEIGHT)
+			{
+				glDeleteTextures(1, &t->texture);
+				delete t;
+				players[index]->texture = createTexture(WIDTH, HEIGHT);
+				t = players[index]->texture;
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, players[index]->texture->texture, 0);
+
+			glViewport(0, 0, players[index]->texture->width, players[index]->texture->height);
+
+			resetMatrix();
+			translateMatrix(matrix, -1.0F, -1.0F, -1.0F);
+			scaleMatrix(matrix, 2 / (float)WIDTH, 2 / (float)HEIGHT, 1.0F);
+			lastShader = pixelProgram - 1;
+			changeShader(pixelProgram);
+		}
+	}
+}
+
+Texture *postBuffer;
+void postProcess(Player *p)
+{
+	if (postBuffer->width != p->texture->width || postBuffer->height != p->texture->height)
+	{
+		delete postBuffer;
+		postBuffer = createTexture(p->texture->width, p->texture->height);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, postBuffer->texture, 0);
+	glViewport(0, 0, postBuffer->width, postBuffer->height);
+	Rect r;
+	r.x = -paddingX;
+	r.y = 0;
+	r.w = postBuffer->width;
+	r.h = postBuffer->height;
+	drawTexture(p->texture, &r);
+	Texture *temp = postBuffer;
+	postBuffer = p->texture;
+	p->texture = temp;
+}
+
+void drawTexture(Texture *texture, Rect *rect)
+{
+	Rect s;
+	s.x = 0;
+	s.y = 0;
+	s.w = texture->width;
+	s.h = texture->height;
+	drawTexture(texture, &s, rect);
+}
+
+void drawTexture(Texture *texture, Rect *source, Rect *dest)
+{
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			float v = gVertexBufferData[i * 3 + j];
+
+			if (j == 0)
+			{
+				v = (v * dest->w) + dest->x + paddingX;
+			}
+			else if (j == 1)
+			{
+				v = (v * dest->h) + dest->y;
+			}
+
+			interVertexBufferData[i * 3 + j] = v;
+		}
+
+		float w = gUVBufferData[i * 2];
+		if (w == 0.0) w = (float)source->x / texture->width;
+		else w = (float)(source->x + source->w) / texture->width;
+		interUVBufferData[i * 2] = w;
+
+		w = gUVBufferData[i * 2 + 1];
+		if (w == 0.0) w = (float)source->y / texture->height;
+		else w = (float)(source->y + source->h) / texture->height;
+		interUVBufferData[i * 2 + 1] = w;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, pixelVertexBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(interVertexBufferData), interVertexBufferData);
+
+	glBindBuffer(GL_ARRAY_BUFFER, pixelUVBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(interUVBufferData), interUVBufferData);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture->texture);
+	glUniform1i(pixelTextureUniform, 0);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, pixelVertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, pixelUVBuffer);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6 * 3);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+}
+
+int getPaddingX()
+{
+	return paddingX;
+}
+
+Texture *createTexture(int width, int height)
+{
+	Texture * t = new Texture();
+
+	GLuint renderedTexture;
+	glGenTextures(1, &renderedTexture);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+
+	// Give an empty image to OpenGL ( the last "0" )
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	// Poor filtering. Needed !
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	t->texture = renderedTexture;
+	t->width = width;
+	t->height = height;
+	return t;
+}
+
+Texture *loadTexture(string filename)
+{
+	Texture * t = new Texture();
+	GLuint TextureID = 0;
+
+	SDL_Surface* Surface = IMG_Load(("image/" + filename + ".png").c_str());
+
+	if (Surface == nullptr||Surface->h*Surface->w==0)
+	{
+		delete t;
+		return nullptr;
+	}
+
+	glGenTextures(1, &TextureID);
+	glBindTexture(GL_TEXTURE_2D, TextureID);
+
+	int Mode = GL_RGB;
+
+	if (Surface->format->BytesPerPixel == 4) {
+		Mode = GL_RGBA;
+	}
+
+	if (Surface->format->BytesPerPixel == 1) {
+		SDL_Surface *converted = SDL_ConvertSurfaceFormat(
+			Surface, SDL_PIXELFORMAT_ARGB8888, 0);
+		SDL_FreeSurface(Surface);
+		Surface = converted;
+		Mode = GL_RGBA;
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, Mode, Surface->w, Surface->h, 0, Mode, GL_UNSIGNED_BYTE, Surface->pixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	t->texture = TextureID;
+	t->width = Surface->w;
+	t->height = Surface->h;
+
+	SDL_FreeSurface(Surface);
+	return t;
+}
+
+void getTextureSize(Texture *t, int *w, int *h)
+{
+	*w = t->width;
+	*h = t->height;
+}
+
+void drawCharacter(char c, int x, int y, int r, int g, int b)
+{
+	GLuint s = lastShader;
+	changeShader(textProgram);
+	GLuint tcolorUniform = glGetUniformLocation(textProgram, "tcolor");
+	glUniform4f(tcolorUniform, r / 255.0, g / 255.0, b / 255.0, 1.0);
+	chars[0][c]->draw(x, y);
+	changeShader(s);
+}
+
+void destroyTexture(Texture *texture)
+{
+	glDeleteTextures(1, &texture->texture);
+	delete texture;
+}
+void fillRect(Rect *rect)
+{
+	GLuint s = lastShader;
+	changeShader(matteProgram);
+
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			float v = gVertexBufferData[i * 3 + j];
+
+			if (j == 0)
+			{
+				v = (v * rect->w) + rect->x + paddingX;
+			}
+			else if (j == 1)
+			{
+				v = (v * rect->h) + rect->y;
+			}
+
+			interVertexBufferData[i * 3 + j] = v;
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, pixelVertexBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(interVertexBufferData), interVertexBufferData);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, pixelVertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint tcolorUniform = glGetUniformLocation(matteProgram, "tcolor");
+	glUniform4f(tcolorUniform, drawR, drawG, drawB, drawA);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6 * 3);
+	glDisableVertexAttribArray(0);
+
+	changeShader(s);
+}
+
+#endif
+
 int ticks = SDL_GetTicks();
 
-void delay(int millis)
+//delay is now sort of deprecated because VSYNC apparently locks the frame rate for us
+//in the eventuality that it doesn't do its job we skip, though
+bool delay(int millis)
 {
 	int ticks_ = SDL_GetTicks();
+	bool o = true;
 	if(ticks_-ticks<millis)
 		SDL_Delay(millis-(ticks_-ticks));
+	//debug(ticks_ - ticks);
+	if (ticks_ - ticks >= 2 * millis)
+	{
+		o = false;
+	}
 	ticks = ticks_;
+	return o;
 }
+
+void shadersInit();
 
 int startGame()
 {
@@ -231,18 +849,93 @@ int startGame()
 		return -4;
 	}
 	SDL_GetDesktopDisplayMode(0, &displayMode);
-	window = SDL_CreateWindow("Revengine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
+#ifdef REVENGINE_GL
+	window = SDL_CreateWindow("Revengine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN |SDL_WINDOW_OPENGL);
+#else
+	window = SDL_CreateWindow("Revengine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, displayMode.w, displayMode.h, SDL_WINDOW_SHOWN);
+#endif
 	if (window == nullptr)
 	{
 		exitGame();
 		return -1;
 	}
+	{
+		setWindowFullscreen(false);
+		int scaleX = getScreenWidth() / WIDTH;
+		int scaleY = getScreenHeight() / HEIGHT;
+		int scalar = scaleX;
+		if (scaleY < scaleX) scalar = scaleY;
+		setWindowSize(scalar * WIDTH, scalar * HEIGHT);
+		centerWindow();
+	}
+#ifndef REVENGINE_GL
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == nullptr)
 	{
 		exitGame();
 		return -1;
 	}
+#else
+	glewExperimental = true;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	glContext = SDL_GL_CreateContext(window);
+	if (glContext == 0)
+	{
+		debug(SDL_GetError());
+		exitGame();
+		return -5;
+	}
+	if (glewInit() != GLEW_OK)
+	{
+		exitGame();
+		return -6;
+	}
+	if (SDL_GL_SetSwapInterval(1) < 0)
+	{
+		debug("No VSync here!");
+	}
+	glEnable(GL_BLEND);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+
+	GLuint vertexArrayID;
+	glGenVertexArrays(1, &vertexArrayID);
+	glBindVertexArray(vertexArrayID);
+
+	glGenBuffers(1, &pixelVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, pixelVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(gVertexBufferData), gVertexBufferData, GL_DYNAMIC_DRAW);
+
+	glGenBuffers(1, &pixelUVBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, pixelUVBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(gUVBufferData), gUVBufferData, GL_DYNAMIC_DRAW);
+
+	pixelProgram = loadShaders(vertexShader, fragmentShader);
+	pixelProgram2 = loadShaders(vertexShader, fragmentShader2);
+	matteProgram = loadShaders(matteVertex, matteFragment);
+	textProgram = loadShaders(vertexShader, textShader);
+
+	shadersInit();
+	postBuffer = createTexture(WIDTH, HEIGHT);
+
+	glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
+
+	matrix = new GLfloat[16];
+	resetMatrix();
+
+	translateMatrix(matrix, -1.0F, 1.0F, -1.0F);
+	scaleMatrix(matrix, 2 / 320.0F, -2 / 240.0F, 1.0F);
+
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	const GLenum draw_buffer = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1, &draw_buffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	lastShader = pixelProgram - 1;
+	changeShader(pixelProgram);
+#endif
 	for (int i = 0; i < SDL_NumJoysticks(); i++)
 	{
 		joysticks.add(SDL_JoystickOpen(i));
@@ -254,6 +947,7 @@ int startGame()
 	keys.add(SDLK_F11, false);
 	keys.add(SDLK_ESCAPE, false);
 	playerMap[0].playing = true;
+#ifndef REVENGINE_GL
 	chars = new Sprite**[4];
 	for (int j = 0; j < 4; j++)
 	{
@@ -266,13 +960,28 @@ int startGame()
 			if(j!=0)SDL_SetTextureBlendMode(sprite->sprite->texture, SDL_BLENDMODE_ADD);
 		}
 	}
+#else
+	chars = new Sprite**[1];
+	for (int j = 0; j < 1;j++)
+	{
+		Sprite *s = new Sprite("charset" + to_string(j), 0, 0);
+		chars[j] = new Sprite*[256];
+		for (int i = 0; i < 256; i++)
+		{
+			Sprite *sprite = new Sprite(s, 8 * (i % 16), 8 * (i / 16), 8, 8, 0, 0);
+			chars[j][i] = sprite;
+		}
+	}
+#endif
 	return 0;
 }
 
 void exitGame()
 {
 	if (window != nullptr) SDL_DestroyWindow(window);
+#ifndef REVENGINE_GL
 	if (renderer != nullptr) SDL_DestroyRenderer(renderer);
+#endif
 	for (int i = 0; i < sprites.length(); i++)
 	{
 		delete sprites[i];
@@ -660,9 +1369,10 @@ int main(int argc, char **argv)
 {
 	debug("Debugging mode active");
 
-	if (startGame() != 0)
+	int _startGame = startGame();
+	if (_startGame != 0)
 	{
-		return -1;
+		return _startGame;
 	}
 
 	addPlayer(0);

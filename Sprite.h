@@ -18,7 +18,6 @@ public:
 	~Sprite();
 
 	void draw(int x, int y);
-	void draw(int x, int y, int alpha);
 };
 
 extern List<Sprite*> sprites; //list of sprites, for resource clearing purposes

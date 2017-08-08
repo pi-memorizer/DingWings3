@@ -76,8 +76,8 @@ void init()
 	//add entities to worlds and stuff here preferably
 	World *test = new StaticWorld("test", &enterNothing,&nothing, &nothing);
 	worlds.add(test);
-	Entity *testEntity = new Entity(test, -4, 9, 32, 32, nullptr, &nothing, &nothing);
-	test->addEntity(testEntity);
+	//Entity *testEntity = new Entity(test, -4, 9, 32, 32, nullptr, &nothing, &nothing);
+	//test->addEntity(testEntity);
 	addItem("null")
 		->_flags(ITEM_FOOD | ITEM_FURNITURE)
 		->_displayName("Nothing");

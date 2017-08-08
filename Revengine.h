@@ -43,7 +43,7 @@ class WorldState;
 class Entity;
 class Item;
 
-void delay(int millis); //blocks for however many milliseconds
+bool delay(int millis); //blocks for however many milliseconds
 int startGame(); //called when the game is started
 void exitGame(); //called when the game is closed
 

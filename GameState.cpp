@@ -6,6 +6,7 @@
 #include "Event.h"
 #include "Animation.h"
 #include "Revengine.h"
+#include "Shader.h"
 
 GameState::GameState(Player *player)
 {
@@ -40,14 +41,15 @@ WorldState::WorldState(Player *player) : GameState(player)
 
 void WorldState::draw()
 {
-	setDrawColor(0xFF, 0xFF, 0xFF, 0);
+	setDrawColor(0xFF, 0xFF, 0xFF, 255);
 	clearScreen();
+	sDefault();
 	for (int i = 0; i < animations.length(); i++)
 	{
 		if (!animations[i]->isDone()) animations[i]->draw();
 	}
 	World *world = worlds[p->getWorldID()];
-	for (int i = p->getCameraCenterX() - WIDTH / 2 - TILE_SIZE * 2; i <= p->getCameraCenterX() + WIDTH / 2 + TILE_SIZE * 2; i += TILE_SIZE)
+	for (int i = p->getCameraCenterX() - WIDTH / 2 - TILE_SIZE * 2 - getPaddingX(); i <= p->getCameraCenterX() + WIDTH / 2 + TILE_SIZE * 2 + getPaddingX(); i += TILE_SIZE)
 	{
 		for (int j = p->getCameraCenterY() - HEIGHT / 2 - TILE_SIZE * 2; j <= p->getCameraCenterY() + HEIGHT / 2 + TILE_SIZE * 2; j += TILE_SIZE)
 		{
@@ -62,14 +64,14 @@ void WorldState::draw()
 		assert(e != nullptr);
 		if (e->isAlive)
 		{
-			if(e->sprite!=nullptr) e->sprite->draw(getOnscreenX(p, e->x), getOnscreenY(p, e->y));
+			e->draw(getOnscreenX(p, e->x), getOnscreenY(p, e->y));
 		}
 	}
 	for (int i = 0; i < numPlayers; i++)
 	{
 		if(p->getWorldID()==players[i]->getWorldID()) players[i]->getSprite()->draw(getOnscreenX(p, players[i]->x), getOnscreenY(p, players[i]->y));
 	}
-	for (int i = p->getCameraCenterX() - WIDTH / 2 - TILE_SIZE*2; i <= p->getCameraCenterX() + WIDTH / 2 + TILE_SIZE*2; i+=TILE_SIZE)
+	for (int i = p->getCameraCenterX() - WIDTH / 2 - TILE_SIZE*2 - getPaddingX(); i <= p->getCameraCenterX() + WIDTH / 2 + TILE_SIZE*2 + getPaddingX(); i+=TILE_SIZE)
 	{
 		for (int j = p->getCameraCenterY() - HEIGHT / 2 - TILE_SIZE*2; j <= p->getCameraCenterY() + HEIGHT / 2 + TILE_SIZE*2; j+=TILE_SIZE)
 		{
@@ -162,17 +164,17 @@ void WorldState::run()
 			{
 				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x + p->width + sight, TILE_SIZE), safeDiv(p->y + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
-			}
+			} else
 			if (p->dir == 1)
 			{
-				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x + p->width / 2, TILE_SIZE), safeDiv(p->y - sight, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x + p->width / 2, TILE_SIZE), safeDiv(p->y - sight-1, TILE_SIZE)))
 					mapInteract = true;
-			}
+			} else
 			if (p->dir == 2)
 			{
-				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x - sight, TILE_SIZE), safeDiv(p->y + p->height / 2, TILE_SIZE)))
+				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x - sight-1, TILE_SIZE), safeDiv(p->y + p->height / 2, TILE_SIZE)))
 					mapInteract = true;
-			}
+			} else
 			if (p->dir == 3)
 			{
 				if (worlds[p->getWorldID()]->interact(p, safeDiv(p->x + p->width / 2, TILE_SIZE), safeDiv(p->y + p->height + sight, TILE_SIZE)))
@@ -223,6 +225,7 @@ void WorldState::run()
 	}
 	if (firstWithWorldId(p->getWorldID(), p->id))
 	{
+		worlds[p->getWorldID()]->run();
 		List<Entity*> &entities = worlds[p->getWorldID()]->entities;
 		for (int i = 0; i < entities.length(); i++)
 		{

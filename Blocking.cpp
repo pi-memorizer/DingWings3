@@ -107,7 +107,7 @@ int hexChar(char c)
 bool drawTextBox(string msg, int count)
 {
 	const int MAX_LINES = 4;
-	setDrawColor(0xFF, 0xFF, 0xFF, 0);
+	setDrawColor(0xFF, 0xFF, 0xFF, 255);
 	int r = 0;
 	int g = 0;
 	int b = 0;
