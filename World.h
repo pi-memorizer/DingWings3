@@ -10,6 +10,7 @@ class World
 public:
 	List<Entity*> entities; //list of entities in the world
 	void virtual run() = 0; //run every frame, good for testing if players step on things
+	void virtual draw(Player *p) = 0;
 	void virtual enter(Player *p) = 0;
 	bool virtual interact(Player *p, int x, int y) = 0;
 	bool virtual collides(int x, int y, int width, int height) = 0;
@@ -41,15 +42,17 @@ class StaticWorld : public World
 {
 private:
 	void(*_run)();
+	void(*_draw)(Player *p);
 	bool(*_interact)(Player*,int,int);
 	void(*_enter)(Player *p);
 	int width, height, xOffset, yOffset;
 	StaticBlock *map = nullptr;
 	bool subCollision(int x, int y, int px, int py, int pwidth, int pheight);
 public:
-	StaticWorld(string filename, void (*enter)(Player *p), void (*run)(), bool(*interact)(Player*,int,int));
+	StaticWorld(string filename, void (*enter)(Player *p), void (*run)(), void (*draw)(Player*),bool(*interact)(Player*,int,int));
 	
-	void run();
+	virtual void run();
+	virtual void draw(Player *p);
 	void enter(Player *p);
 	bool interact(Player *p, int x, int y);
 	bool virtual collides(int x, int y, int width, int height);

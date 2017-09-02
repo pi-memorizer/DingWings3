@@ -11,8 +11,9 @@ void World::addEntity(Entity *e)
 	entities.add(e);
 }
 
-StaticWorld::StaticWorld(string filename, void(*enter)(Player*p),void(*run)(), bool(*interact)(Player*, int, int))
+StaticWorld::StaticWorld(string filename, void(*enter)(Player*p),void(*run)(), void (*draw)(Player*),bool(*interact)(Player*, int, int))
 {
+	_draw = draw;
 	_run = run;
 	_interact = interact;
 	_enter = enter;
@@ -52,6 +53,11 @@ StaticWorld::StaticWorld(string filename, void(*enter)(Player*p),void(*run)(), b
 void StaticWorld::run()
 {
 	_run();
+}
+
+void StaticWorld::draw(Player *p)
+{
+	_draw(p);
 }
 
 void StaticWorld::enter(Player *p)

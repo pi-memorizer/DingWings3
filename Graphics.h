@@ -25,7 +25,7 @@ void fillRect(Rect *r); //fills a small area of the screen akin to clearScreen()
 Texture *loadTexture(string filename); //loads a texture from a file
 void getTextureSize(Texture *texture, int *w, int *h); //gets the dimensions of a texture
 void destroyTexture(Texture *texture); //removes a texture from memory
-void drawCharacter(char c, int x, int y, int r, int g, int b); //draws a character with a given color and coordinate from the bitmap font
+void drawCharacter(unsigned char c, int x, int y, int r, int g, int b); //draws a character with a given color and coordinate from the bitmap font
 int getPaddingX();
 
 #endif

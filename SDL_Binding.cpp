@@ -754,7 +754,7 @@ void getTextureSize(Texture *t, int *w, int *h)
 	*h = t->height;
 }
 
-void drawCharacter(char c, int x, int y, int r, int g, int b)
+void drawCharacter(unsigned char c, int x, int y, int r, int g, int b)
 {
 	GLuint s = lastShader;
 	changeShader(textProgram);

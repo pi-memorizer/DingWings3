@@ -21,6 +21,8 @@
 //           function ever.                  //
 ///////////////////////////////////////////////
 
+struct Phrase;
+
 //allows for multiplayer blocking functions
 class Script : public GameState
 {
@@ -57,6 +59,7 @@ public:
 	Item* selectItem(); //Selects an item from the inventory, regardless of category
 	Item* selectItem(unsigned long long categories); //Selects an item from the inventory if it is part of the given categories, return the Item chosen
 	void blockingAnimation(Animation *animation); //runs a blocking animation
+	int phraseBattle(Phrase*, int length);
 };
 
 /////////////////////////////////////
@@ -85,5 +88,13 @@ struct ApplicationClosingException
 	ApplicationClosingException();
 	~ApplicationClosingException();
 };
+
+struct CharacterInfo
+{
+	int r = 0, g = 0, b = 0;
+	int length;
+};
+
+bool drawTextBox(string msg, int count, bool drawBackgroundBox, bool draw, int queryChar, int startingX, int startingY, int lineLength, CharacterInfo &info);
 
 #endif

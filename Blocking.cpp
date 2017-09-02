@@ -5,6 +5,7 @@
 #include "Item.h"
 #include "Event.h"
 #include "Animation.h"
+#include "PhraseBattle.h"
 #include <cmath>
 
 
@@ -92,7 +93,7 @@ int findNextSpace(string msg, int position)
 			j++;
 		}
 	}
-	return msg.length()-position;
+	return j;
 }
 
 int hexChar(char c)
@@ -104,7 +105,7 @@ int hexChar(char c)
 	return 0;
 }
 
-bool drawTextBox(string msg, int count)
+bool drawTextBox(string msg, int count, bool drawBackgroundBox, bool draw, int queryChar, int startingX, int startingY, int lineLength, CharacterInfo &info)
 {
 	const int MAX_LINES = 4;
 	setDrawColor(0xFF, 0xFF, 0xFF, 255);
@@ -116,14 +117,14 @@ bool drawTextBox(string msg, int count)
 	rect.w = WIDTH;
 	rect.h = 8 + 2 * MAX_LINES * 8;
 	rect.y = HEIGHT - rect.h;
-	fillRect(&rect);
+	if(drawBackgroundBox) fillRect(&rect);
 
 	int line = 1;
 	int x = 0;
 	int j = 0;
 	float f = 0.0;
 	float df = 1.0;
-	int width = WIDTH / 8 - 2;
+	int width = lineLength;
 	int wave = 0;
 	int rainbow = 0;
 	int rainbowBanding = 0;
@@ -180,14 +181,15 @@ bool drawTextBox(string msg, int count)
 			x = 0;
 			j++;
 		}
-		if (nextSpace > width - x)
+		if (nextSpace + x > width)
 		{
+			//debug("yes this is it " << width << " " << x << " " << nextSpace);
 			line++;
 			x = 0;
 		}
 
 		int dx = 0;
-		int y = rect.y + 8 * line;
+		int y = 8*startingY + 8 * line; //rect.y -> 8*startingY
 		if (wave != 0) y += sin(((frames + (int)f) / 5.0))*wave;
 		if (jitter != 0)
 		{
@@ -248,19 +250,34 @@ bool drawTextBox(string msg, int count)
 		if (g > 255) g = 255;
 		if (b > 255) b = 255;
 
-		drawCharacter(msg[j], 8 + 8 * x + dx, y, r, g, b);
+		if(draw)drawCharacter(msg[j], startingX*8 + 8 * x + dx, y, r, g, b);
 
 		r = _r;
 		g = _g;
 		b = _b;
+
+		if (x+lineLength*(line-1) == queryChar)
+		{
+			info.r = r;
+			info.g = g;
+			info.b = b;
+		}
+
 		j++;
 		nextSpace = findNextSpace(msg, j);
 		x++;
 		f += df;
 	}
+	info.length = x + lineLength*(line - 1);
 	return j >= msg.length();
 }
 
+bool drawTextBox(string msg, int count)
+{
+	CharacterInfo i;
+	bool response = drawTextBox(msg, count, true, true, 30, 1, HEIGHT / 8 - (1 + 2 * 4), WIDTH / 8 - 2, i);
+	return response;
+}
 void TextBox::draw()
 {
 	caller->draw();
@@ -827,5 +844,20 @@ void Script::blockingAnimation(Animation *animation)
 	else {
 		delete animation;
 		currentState++;
+	}
+}
+
+int Script::phraseBattle(Phrase* phrase, int length)
+{
+	if (currentState == states.length())
+	{
+		states.add(Return(0));
+		PhraseBattle *n = new PhraseBattle(p, phrase, length, &states[states.length() - 1].i);
+		p->pushState(n);
+		currentState++;
+		throw 0;
+	}
+	else {
+		return states[currentState++].i;
 	}
 }

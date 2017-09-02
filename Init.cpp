@@ -8,6 +8,8 @@
 #include "IO.h"
 #include "SoundSystem.h"
 #include "GameState.h"
+#include "Shader.h"
+#include "PhraseBattle.h"
 
 void testScript(Player*p, int x, int y, Script *s)
 {
@@ -22,6 +24,32 @@ void testScript(Player*p, int x, int y, Script *s)
 	}
 }
 
+Phrase testPhrases1[6] = {
+	Phrase("<c00FF00>Y<c000000>ou're <c00FF00>a<c000000> <c00FF00>r<c000000>abbit",0,1),
+	Phrase("<c00FF00>T<c000000>hat <c00FF00>f<c000000>luffy <c00FF00>t<c000000>ail <c00FF00>l<c000000>ooks <c00FF00>c<c000000>ute",0,2),
+	Phrase("<c00FF00>S<c000000>orry, <c00FF00>o<c000000>ut <c00FF00>o<c000000>f <c00FF00>c<c000000>arot <c00FF00>c<c000000>ake",0,3),
+	Phrase("<c00FF00>M<c000000>onty <c00FF00>P<c000000>ython <c00FF00>d<c000000>id <c00FF00>y<c000000>ou <c00FF00>b<c000000>etter",0,4),
+	Phrase("<c00FF00>T<c000000>witch <c00FF00>t<c000000>witch <c00FF00>t<c000000>witch <c00FF00>t<c000000>witch <c00FF00>t<c000000>witch",0,5),
+	Phrase("<c00FF00>G<c000000>o <c00FF00>b<c000000>ack <c00FF00>t<c000000>o <c00FF00>y<c000000>our <c00FF00>o<c000000>wn <c00FF00>g<c000000>ame",0,6)
+};
+
+void battleTest(Player*p, int x, int y, Script *s)
+{
+	s->textBox("What you gotta say to me, punk?", true);
+	int i = s->phraseBattle(testPhrases1, 6);
+	if (i < 30)
+	{
+		s->textBox("Is that all you got?", false);
+	}
+	else if (i >= 100)
+	{
+		s->textBox("Ouch, that one stung!", false);
+	}
+	else {
+		s->textBox("Meh.", false);
+	}
+}
+
 void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
 	if (x == -1 && y == 2)
@@ -31,7 +59,11 @@ bool nothing(Player *p, int x, int y) { //interact variant
 	}
 	if (x == -1 && y == 1)
 	{
-		bTextbox(p,"Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye", false);
+		bTextbox(p, "Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye", false);
+	}
+	if (x == -1 && y == 0)
+	{
+		Script::start(p, x, y, &battleTest);
 	}
 	return false;
 }
@@ -41,7 +73,14 @@ bool nothing(Player *p) //interact entity variant
 }
 void enterNothing(Player *p)
 {
+}
 
+void testWorldLighting(Player *p)
+{
+	List<Light> lights;
+	lights.add(Light(32.0F, 32.0F, 100.0F, 0.7, 0.7, 0.6));
+	sLighting(p,0.2,0.2,0.4,lights);
+	postProcess(p);
 }
 
 void init()
@@ -74,7 +113,7 @@ void init()
 	}
 
 	//add entities to worlds and stuff here preferably
-	World *test = new StaticWorld("test", &enterNothing,&nothing, &nothing);
+	World *test = new StaticWorld("test", &enterNothing,&nothing, &testWorldLighting,&nothing);
 	worlds.add(test);
 	//Entity *testEntity = new Entity(test, -4, 9, 32, 32, nullptr, &nothing, &nothing);
 	//test->addEntity(testEntity);

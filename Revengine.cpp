@@ -2,19 +2,15 @@
 #include "Player.h"
 #include "Sprite.h"
 #include "Event.h"
+#include "GameState.h"
 
 #ifdef MOBILE
 string to_string(int value);
 #endif
 
 /*
-Widescreen support for single player
-shaders!
 better dynamic memory handling (allocators attached to states?)
-better state reseting (preferably)
-per player flag maps
 pushing states and single time critical code inside scripts
-drawing all in pixel coordinates by passing centers and graphical size constraints (aka Static World defines draw)
 */
 
 int frames = 0;
@@ -46,9 +42,9 @@ bool theLoop()
 		if (numPlayers == 2)
 		{
 			startDrawingPlayer(0);
-			players[0]->draw();
+			players[0]->getState()->draw();
 			startDrawingPlayer(1);
-			players[1]->draw();
+			players[1]->getState()->draw();
 			startDrawingPlayer(-1);
 
 			Rect rect;
@@ -97,7 +93,7 @@ bool theLoop()
 				rect.y = 0;
 			}
 			startDrawingPlayer(0);
-			players[0]->draw();
+			players[0]->getState()->draw();
 			startDrawingPlayer(-1);
 			drawTexture(players[0]->texture, &rect);
 		}
@@ -121,15 +117,15 @@ bool theLoop()
 				rect.y = 0;
 			}
 			startDrawingPlayer(0);
-			players[0]->draw();
+			players[0]->getState()->draw();
 			startDrawingPlayer(1);
-			players[1]->draw();
+			players[1]->getState()->draw();
 			startDrawingPlayer(2);
-			players[2]->draw();
+			players[2]->getState()->draw();
 			if (numPlayers == 4)
 			{
 				startDrawingPlayer(3);
-				players[3]->draw();
+				players[3]->getState()->draw();
 			}
 			startDrawingPlayer(-1);
 			rect.w /= 2;
@@ -147,7 +143,7 @@ bool theLoop()
 	}
 	for (int i = 0; i < numPlayers; i++)
 	{
-		players[i]->run();
+		players[i]->getState()->run();
 	}
 
 	prevDelay = delay(16);

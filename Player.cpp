@@ -149,25 +149,14 @@ Sprite *Player::getSprite()
 	return guy[i];
 }
 
-void Player::draw()
+void Player::draw(int x, int y)
 {
-	GameState *state = getState();
-	if (state != nullptr)
-	{
-		state->draw();
-	}
-	
+	getSprite()->draw(x, y);
 }
 
 void Player::run()
 {
-	GameState *state = getState();
-	if (state != nullptr)
-	{
-		state->run();
-	}
-	//if (keys[keyA])
-		//sounds[0]->play();
+
 }
 
 bool Player::hasItem(Item *item)
@@ -272,5 +261,25 @@ int Player::getCameraCenterY()
 	}
 	else {
 		return cameraY;
+	}
+}
+
+int Player::getFlag(string s)
+{
+	if (flags.contains(s))
+	{
+		return flags[s];
+	}
+	else return 0;
+}
+
+void Player::setFlag(string s, int v)
+{
+	if (flags.contains(s))
+	{
+		flags[s] = v;
+	}
+	else {
+		flags.add(s, v);
 	}
 }

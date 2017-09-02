@@ -317,6 +317,7 @@ public:
 	List<T> keys();
 	void remove(T key);
 	bool contains(T key);
+	void clear();
 };
 
 template<class T, class V> Hashmap<T,V>::Hashmap()
@@ -503,6 +504,19 @@ template<class T, class V> void Hashmap<T,V>::remove(T key)
 	{
 		delete t;
 		back[i] = empty;
+	}
+}
+
+template<class T, class V> void Hashmap<T, V>::clear()
+{
+	for (int i = 0; i < count; i++)
+	{
+		Tuple *t = back[i];
+		if (t != nullptr&&t != empty)
+		{
+			delete t;
+		}
+		back[i] = nullptr;
 	}
 }
 

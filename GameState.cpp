@@ -69,7 +69,7 @@ void WorldState::draw()
 	}
 	for (int i = 0; i < numPlayers; i++)
 	{
-		if(p->getWorldID()==players[i]->getWorldID()) players[i]->getSprite()->draw(getOnscreenX(p, players[i]->x), getOnscreenY(p, players[i]->y));
+		if(p->getWorldID()==players[i]->getWorldID()) players[i]->draw(getOnscreenX(p, players[i]->x), getOnscreenY(p, players[i]->y));
 	}
 	for (int i = p->getCameraCenterX() - WIDTH / 2 - TILE_SIZE*2 - getPaddingX(); i <= p->getCameraCenterX() + WIDTH / 2 + TILE_SIZE*2 + getPaddingX(); i+=TILE_SIZE)
 	{
@@ -79,6 +79,7 @@ void WorldState::draw()
 			if (tileset[index] != nullptr&&index != 0) tileset[index]->draw(getOnscreenX(p, safeDiv(i,TILE_SIZE)*TILE_SIZE), getOnscreenY(p, safeDiv(j,TILE_SIZE)*TILE_SIZE));
 		}
 	}
+	worlds[p->getWorldID()]->draw(p);
 }
 
 void attemptMove(Player *p, int dx, int dy, int speed)
@@ -223,6 +224,7 @@ void WorldState::run()
 			}
 		}
 	}
+	p->run();
 	if (firstWithWorldId(p->getWorldID(), p->id))
 	{
 		worlds[p->getWorldID()]->run();

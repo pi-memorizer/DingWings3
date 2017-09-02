@@ -3,6 +3,7 @@
 #include "Revengine.h"
 #include "Graphics.h"
 #include "Entity.h"
+#include "IO.h"
 
 //Anything dealing with individual players is here
 
@@ -22,7 +23,11 @@ class Player : public Entity
 	Stack<GameState*> states;
 	int worldID;
 	bool cameraLocked = true;
+	Hashmap<string, int> flags;
+	Sprite *getSprite(); //gets the current sprite for the player, animation dependent
 public:
+	friend void loadPlayer(File * file, Player *p);
+	friend void savePlayer(File *file, Player *p);
 	friend int getOnscreenX(Player *p, int x); //allowed to access private data
 	friend int getOnscreenY(Player *p, int y); //allowed to access private data 
 	int cameraX, cameraY; //the position of the camera (if not locked to player)
@@ -37,8 +42,7 @@ public:
 	void pushState(GameState *state); //adds a state to the stack
 	void popState(); //removes and cleans up a state from the stack
 	void setState(GameState *state); //clears the stack and places this new state on top
-	Sprite *getSprite(); //gets the current sprite for the player, animation dependent
-	virtual void draw();
+	virtual void draw(int x, int y);
 	virtual void run();
 	bool hasItem(Item *item); //checks to see if the player has an item in their inventory
 	bool hasItem(unsigned long long flag); //checks to see if the player has a category of item
@@ -51,6 +55,8 @@ public:
 	void unlockCamera(); //makes it so the camera can be controlled programmatically
 	int getCameraCenterX();
 	int getCameraCenterY();
+	void setFlag(string s, int i);
+	int getFlag(string s);
 };
 
 const int MAX_PLAYERS = 4; //the maximum amount of players for our game
