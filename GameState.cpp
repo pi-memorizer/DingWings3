@@ -142,7 +142,7 @@ void WorldState::run()
 		else if (p->dir == 3 && dy > 0)
 		{
 		}
-		else {
+		else if(!p->attacking) {
 			if (dx > 0)
 				p->dir = 0;
 			else if (dy < 0)
@@ -152,12 +152,37 @@ void WorldState::run()
 			else if (dy > 0)
 				p->dir = 3;
 		}
-		if (_dir != p->dir) p->wait = 0;
+		bool tryingToAttack = getKey(p, KEY_RIGHT2) || getKey(p, KEY_LEFT2)||getKey(p, KEY_UP2)||getKey(p, KEY_DOWN2);
+		if (!p->attacking&&getKey(p, KEY_RIGHT2))
+		{
+			p->dir = 0;
+		}
+		if (!p->attacking&&getKey(p, KEY_UP2))
+		{
+			p->dir = 1;
+		}
+		if (!p->attacking&&getKey(p, KEY_LEFT2))
+		{
+			p->dir = 2;
+		}
+		if (!p->attacking&&getKey(p, KEY_DOWN2))
+		{
+			p->dir = 3;
+		}
+		if (_dir != p->dir&&!(!p->attacking&&tryingToAttack)) p->wait = 0;
 		if ((dx != 0 || dy != 0) && p->wait >= 3) attemptMove(p, dx, dy, 2);
 		else if (dx == 0 && dy == 0)
 			p->wait = 0;
 		p->wait++;
 		int sight = 1;
+		if (!p->attacking&&tryingToAttack)
+		{
+			p->attacking = true;
+			if (p->power == 0)
+			{
+				worlds[p->getWorldID()]->addEntity(new Tongue(worlds[p->getWorldID()], p));
+			}
+		}
 		if (getKey(p,KEY_A) && !a)
 		{
 			bool mapInteract = false;
@@ -233,11 +258,12 @@ void WorldState::run()
 		{
 			if (entities[i]->isAlive)
 			{
-				entities[i]->run();
+				if((safeDiv(entities[i]->x,WIDTH)==safeDiv(p->x,WIDTH)&&safeDiv(entities[i]->y,HEIGHT)==safeDiv(p->y,HEIGHT))||entities[i]->power == -1)
+					entities[i]->run();
 			}
 			if (!entities[i]->isAlive)
 			{
-				entities.removeAt(i);
+				delete entities.removeAt(i);
 				i--;
 			}
 		}

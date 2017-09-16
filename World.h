@@ -18,6 +18,10 @@ public:
 	int virtual getUpper(int x, int y) = 0;//upper map layer
 	int virtual getEffect(int x, int y) = 0; //effect layer
 	int virtual getCollision(int x, int y) = 0; //collision layer
+	bool virtual setLower(int v, int x, int y) = 0;//lower map layer
+	bool virtual setUpper(int v, int x, int y) = 0;//upper map layer
+	bool virtual setEffect(int v, int x, int y) = 0; //effect layer
+	bool virtual setCollision(int v, int x, int y) = 0; //collision layer
 	void addEntity(Entity *e);
 };
 
@@ -60,6 +64,10 @@ public:
 	int virtual getUpper(int x, int y);
 	int virtual getEffect(int x, int y);
 	int virtual getCollision(int x, int y);
+	bool virtual setLower(int v, int x, int y);//lower map layer
+	bool virtual setUpper(int v, int x, int y);//upper map layer
+	bool virtual setEffect(int v, int x, int y); //effect layer
+	bool virtual setCollision(int v, int x, int y); //collision layer
 };
 
 #endif

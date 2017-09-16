@@ -95,6 +95,9 @@ Player::Player(int id) : Entity(nullptr,-0,0)
 		inventory[i].item = nullptr;
 		inventory[i].number = 0;
 	}
+	cameraLocked = false;
+	cameraX = 0;
+	cameraY = 64;
 }
 
 Player::~Player()

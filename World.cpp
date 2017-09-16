@@ -150,3 +150,43 @@ int StaticWorld::getCollision(int x, int y)
 	}
 	else return 0;
 }
+
+bool StaticWorld::setLower(int v, int x, int y)
+{
+	if (x >= xOffset&&y >= yOffset&&x < xOffset + width&&y < yOffset + height)
+	{
+		map[(x - xOffset) + (y - yOffset)*width].lower = (unsigned short)v;
+		return true;
+	}
+	return false;
+}
+
+bool StaticWorld::setUpper(int v, int x, int y)
+{
+	if (x >= xOffset&&y >= yOffset&&x < xOffset + width&&y < yOffset + height)
+	{
+		map[(x - xOffset) + (y - yOffset)*width].upper = (unsigned short)v;
+		return true;
+	}
+	return false;
+}
+
+bool StaticWorld::setEffect(int v, int x, int y)
+{
+	if (x >= xOffset&&y >= yOffset&&x < xOffset + width&&y < yOffset + height)
+	{
+		map[(x - xOffset) + (y - yOffset)*width].effect = (unsigned char)v;
+		return true;
+	}
+	return false;
+}
+
+bool StaticWorld::setCollision(int v, int x, int y)
+{
+	if (x >= xOffset&&y >= yOffset&&x < xOffset + width&&y < yOffset + height)
+	{
+		map[(x - xOffset) + (y - yOffset)*width].collision = (unsigned char)v;
+		return true;
+	}
+	return false;
+}

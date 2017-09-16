@@ -29,7 +29,8 @@ public:
 	friend void loadPlayer(File * file, Player *p);
 	friend void savePlayer(File *file, Player *p);
 	friend int getOnscreenX(Player *p, int x); //allowed to access private data
-	friend int getOnscreenY(Player *p, int y); //allowed to access private data 
+	friend int getOnscreenY(Player *p, int y); //allowed to access private data
+	bool attacking = false;
 	int cameraX, cameraY; //the position of the camera (if not locked to player)
 	ItemNumberPair inventory[INVENTORY_SLOTS]; //the player's inventory
 	//directions are 0 to the right, 1 upwards, 2 to the left, 3 downwards

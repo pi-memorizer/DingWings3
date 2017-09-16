@@ -37,7 +37,8 @@ Sprite ***chars;
 List<SDL_Joystick*> joysticks;
 struct PlayerMap
 {
-	bool a = false, b = false, up = false, down = false, left = false, right = false;
+	bool a = false, b = false, up = false, down = false, left = false, right = false,
+		up2 = false, down2 = false, left2 = false, right2 = false;
 	bool playing = false;
 };
 
@@ -945,6 +946,9 @@ int startGame()
 		keys.add(i, false);
 	keys.add(SDLK_F4, false);
 	keys.add(SDLK_F11, false);
+	keys.add(SDLK_LSHIFT, false);
+	keys.add(SDLK_RSHIFT, false);
+	keys.add(SDLK_SPACE, false);
 	keys.add(SDLK_ESCAPE, false);
 	playerMap[0].playing = true;
 #ifndef REVENGINE_GL
@@ -1115,28 +1119,39 @@ void switchKey(int k, bool state)
 	switch (k)
 	{
 	case SDLK_w:
-	case SDLK_UP:
 		playerMap[0].up = state;
 		break;
 	case SDLK_d:
-	case SDLK_RIGHT:
 		playerMap[0].right = state;
 		break;
 	case SDLK_s:
-	case SDLK_DOWN:
 		playerMap[0].down = state;
 		break;
 	case SDLK_a:
-	case SDLK_LEFT:
 		playerMap[0].left = state;
 		break;
-	case SDLK_j:
-	case SDLK_z:
+	case SDLK_SPACE:
 		playerMap[0].a = state;
 		break;
-	case SDLK_k:
-	case SDLK_x:
+	case SDLK_LSHIFT:
+	case SDLK_RSHIFT:
 		playerMap[0].b = state;
+		break;
+	case SDLK_UP:
+	case SDLK_i:
+		playerMap[0].up2 = state;
+		break;
+	case SDLK_DOWN:
+	case SDLK_k:
+		playerMap[0].down2 = state;
+		break;
+	case SDLK_LEFT:
+	case SDLK_j:
+		playerMap[0].left2 = state;
+		break;
+	case SDLK_RIGHT:
+	case SDLK_l:
+		playerMap[0].right2 = state;
 		break;
 	default:
 		break;
@@ -1317,6 +1332,14 @@ bool getKey(Player *p, EventKey key)
 		return m->left;
 	case KEY_RIGHT:
 		return m->right;
+	case KEY_UP2:
+		return m->up2;
+	case KEY_DOWN2:
+		return m->down2;
+	case KEY_LEFT2:
+		return m->left2;
+	case KEY_RIGHT2:
+		return m->right2;
 	default:
 		break;
 	}

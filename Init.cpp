@@ -52,19 +52,6 @@ void battleTest(Player*p, int x, int y, Script *s)
 
 void nothing() {} //run variant
 bool nothing(Player *p, int x, int y) { //interact variant
-	if (x == -1 && y == 2)
-	{
-		Script::start(p, x, y, &testScript);
-		return true;
-	}
-	if (x == -1 && y == 1)
-	{
-		bTextbox(p, "Hello this a test <s010>that I hope <s100c00FF00>goes<c000000> <w1>well bye", false);
-	}
-	if (x == -1 && y == 0)
-	{
-		Script::start(p, x, y, &battleTest);
-	}
 	return false;
 }
 bool nothing(Player *p) //interact entity variant
@@ -114,6 +101,8 @@ void init()
 
 	//add entities to worlds and stuff here preferably
 	World *test = new StaticWorld("test", &enterNothing,&nothing, &testWorldLighting,&nothing);
+	for(int i = 0; i < 5; i++)
+		test->addEntity(new CoolGuy(test, -96, i*32));
 	worlds.add(test);
 	//Entity *testEntity = new Entity(test, -4, 9, 32, 32, nullptr, &nothing, &nothing);
 	//test->addEntity(testEntity);

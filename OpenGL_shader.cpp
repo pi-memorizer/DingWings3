@@ -64,12 +64,13 @@ namespace shader {
 		"uniform sampler2D sprite;" +
 		"uniform vec4 rect;" +
 		"uniform vec3 ambient;" +
+		"uniform int max;"
 		"void main(){" +
 		"color = texture(sprite,UV);" +
 		"vec3 lc = ambient;" +
 		"float x = rect.x + rect.z*UV.x;" +
 		"float y = rect.y + rect.w*UV.y;" +
-		"for(int i = 0; i < 16; i++){" +
+		"for(int i = 0; i < max; i++){" +
 		"lc = lc + vec3(lights[6*i+3],lights[6*i+4],lights[6*i+5])*(1.0-clamp(((lights[6*i]-x)*(lights[6*i]-x)+(lights[6*i+1]-y)*(lights[6*i+1]-y))/lights[6*i+2]/lights[6*i+2],0.0,1.0));" +
 		"}" +
 		"color = color * vec4(lc,1.0);" +
@@ -133,8 +134,9 @@ void sLighting(Player *p, float ambientR, float ambientG, float ambientB, List<L
 	}
 	glUniform1fv(location, 6*16, light);
 	GLfloat rect[4] = {
-		p->x-p->texture->width/2.0+p->width/2.0,p->y-p->texture->height/2.0+p->height/2.0,p->texture->width,p->texture->height
+		p->getCameraCenterX()-p->texture->width/2.0+p->width/2.0,p->getCameraCenterY()-p->texture->height/2.0+p->height/2.0,p->texture->width,p->texture->height
 	};
 	glUniform4f(glGetUniformLocation(shader::sLightTest, "rect"), rect[0], rect[1], rect[2], rect[3]);
 	glUniform3f(glGetUniformLocation(shader::sLightTest, "ambient"), ambientR, ambientG, ambientB);
+	glUniform1i(glGetUniformLocation(shader::sLightTest, "max"), lights.length());
 }
